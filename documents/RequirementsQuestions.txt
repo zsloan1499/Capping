@@ -1,0 +1,45 @@
+1.) General Project Questions
+- What is the primary goal of the project?
+- Who is the target audience?
+- How will users access the application?
+- What integrations are necessary (e.g., Spotify Web API)?
+- What are the key features that differentiate this application from other music list applications?
+- How will user data be stored and managed?
+
+2.) Functional Requirements
+- How will users sign up / create an account?
+- How will users add songs to their list?
+- What features will be available for rating songs?
+- How can users manage and organize their song lists?
+- How will users interact with friends within the application?
+- What features will be available for song discovery?
+- Will users be able to create custom playlists?
+- How will search functionality be implemented?
+
+3.) Non-functional Requirements
+- What are the performance expectations for the application?
+- What are the security requirements, especially regarding user data?
+- What should the user interface look like?
+- How should the application handle scalability?
+- How much capacity will the application have and how will that be assessed?
+- What is the expected response time for various features?
+- What are the availability and reliability expectations?
+- How will the app be accessible to users with disabilities?
+- What platforms will the application be available on? (app/website, OS)
+- How will users authenticate during the sign up process?
+
+4.) Constraints and Assumptions
+- What constraints are there on the technologies that can be used?
+- What assumptions are made about the users' devices or environments?
+- Are there any limitations imposed by the Spotify Web API?
+- What is the project timeline?
+- What is the budget for the project?
+- What are the skills and resources of the development team?
+
+5.) Risks and Dependencies
+- What are the potential risks related to the use of the Spotify Web API?
+- What dependencies does the project have on external systems or services?
+- What are the risks associated with data security and privacy?
+- What are the potential risks related to project timelines or team resources?
+- What are the risks of feature creep or scope changes?
+- How will changes in Spotify's API policies or availability affect the project?
