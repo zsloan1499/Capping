@@ -27,6 +27,7 @@
 - How will the app be accessible to users with disabilities?
 - What platforms will the application be available on? (app/website, OS)
 - How will users authenticate during the sign up process?
+- How will users be able to see other users statistics and ratings?
 
 4.) Constraints and Assumptions
 - What constraints are there on the technologies that can be used?
