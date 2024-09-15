@@ -6,9 +6,9 @@ import { useSession } from "next-auth/react";
 export default function UserInfo() {
     const { data: session } = useSession();
 
-    console.log('Session data:', session);
+    //console.log('Session data:', session);
 
-    console.log('Session user data:', session.user);
+    //console.log('Session user data:', session.user);
 
     return (
         <div>
