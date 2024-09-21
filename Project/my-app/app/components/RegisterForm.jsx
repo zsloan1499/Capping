@@ -30,8 +30,29 @@ export default function RegisterForm(){
 
         }
 
+        //makes sure the 2 passwords match
         if (password !== retypepassword) {
             setError("Passwords do not match");
+            return;
+        }
+
+        //check password length
+        if (password.length < 8) {
+            setError("Password must be at least 8 characters long");
+            return;
+        }
+
+        // check to make sure the password has a number from array and a char from the array
+        const hasSpecialChar = specialCharacters.some(char => password.includes(char));
+        const hasNumber = numberArray.some(num => password.includes(num));
+
+        if (!hasSpecialChar) {
+            setError("Password must include at least one special character");
+            return;
+        }
+
+        if (!hasNumber) {
+            setError("Password must include at least one number");
             return;
         }
 
