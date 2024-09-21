@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { signOut } from "next-auth/react";
+
 
 const clientId = "877616753121-6hui2g63bsdib7mmt1udbrleufdhvgaj.apps.googleusercontent.com";
 
@@ -39,8 +41,20 @@ export default function LoginForm() {
     };
 
     const handleGoogleLogin = async (credentialResponse) => {
-        console.log(credentialResponse);
-        router.replace("dashboard");
+        try {
+            const res = await signIn("google", {
+                redirect: false,
+            });
+    
+            if (res?.error) {
+                console.log("Google login error:", res.error);
+                setError("Error logging in with Google");
+            } else {
+                router.replace("/dashboard");
+            }
+        } catch (error) {
+            console.error("Google login failed:", error);
+        }
     };
 
     return (
@@ -55,6 +69,7 @@ export default function LoginForm() {
                     <br />
                     <button className="bg-green-500 m-2 text-white w-16 font-bold cursor-pointer">Login</button>
                 </form>
+                <button onClick={() => signOut({ callbackUrl: '/' , redirect: true})} className="bg-red-600 m-2">Log Out</button>
                 {error && (
                     <div className="bg-red-500 text-white text-sm m-2 w-fit ">
                         {error}
