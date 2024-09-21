@@ -39,7 +39,7 @@ export default function LoginForm() {
             console.log("error")
         }
     };
-
+    // need to fix google login
     const handleGoogleLogin = async (credentialResponse) => {
         try {
             const res = await signIn("google", {

@@ -1,11 +1,13 @@
 'use client'
-
+ 
+//imports
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function RegisterForm(){
 
+    // variables
     const [fName, setfName] = useState("");
     const [lName, setlName] = useState("");
     const [email, setEmail] = useState("");
@@ -21,14 +23,17 @@ export default function RegisterForm(){
     const numberArray = ["0","1","2","3","4","5","6","7","8","9"]
     const emailCheck = ["@gmail.com","@outlook.com","@outlook.edu"]
 
+    // used for email check
     const isValidEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email pattern apparently
         return emailRegex.test(email) && emailCheck.some(domain => email.endsWith(domain));
     };
 
+    // when the form is submitted make sure everythign is good
     const handleSubmit = async (e) => {
         // will not reload page if nothing is submitted
         e.preventDefault();
+        // makes sure every field is filled in
         if (!fName || !lName || !email || !username || !password || !retypepassword){
             setError("all fields need to be filled in");
             return;
@@ -59,6 +64,7 @@ export default function RegisterForm(){
         const hasSpecialChar = specialCharacters.some(char => password.includes(char));
         const hasNumber = numberArray.some(num => password.includes(num));
 
+        
         if (!hasSpecialChar) {
             setError("Password must include at least one special character");
             return;

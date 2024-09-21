@@ -8,17 +8,20 @@ export default function UserInfo() {
     const { data: session } = useSession();
     const [error, setError] = useState("");
 
-
+    //deletes user account
     const deleteAccount = async () => {
         if (!session?.user?.email) {
             setError(" email not found.");
             return;
         }
-
+        
+        // uses the email from the current session
         const userEmail = session.user.email;
 
         try {
+            //calls the delete api
             const response = await fetch('/api/deleteaccount', {
+                //post used as we are sending data to the back
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -28,6 +31,7 @@ export default function UserInfo() {
 
             const result = await response.json();
 
+            //if good we sign out and send back to login page
             if (response.ok) {
                 console.log("Account deleted successfully:", result);
                 signOut(); // signs the user out
@@ -50,9 +54,12 @@ export default function UserInfo() {
             <div className="m-2">UserName: <span className="font-bold m-2">{session?.user?.username || 'N/A'}</span></div>
             <div className="m-2">Email: <span className="font-bold m-2">{session?.user?.email}</span></div>
             <button className=" m-2 border border-2 border-gray-900">Add Photo</button> <br />
+
+            {/* signs user out */}
             <button onClick={() => signOut()} className="bg-red-600 m-2">Log Out</button>
 
             <br />
+            {/* when clicked it calls the delete user */}
             <button onClick ={() => deleteAccount()} className="bg-red-600 m-2">Delete Account</button>
             {error && <div className="text-red-500 m-2">{error}</div>}
         </div>
