@@ -21,6 +21,11 @@ export default function RegisterForm(){
     const numberArray = ["0","1","2","3","4","5","6","7","8","9"]
     const emailCheck = ["@gmail.com","@outlook.com","@outlook.edu"]
 
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email pattern apparently
+        return emailRegex.test(email) && emailCheck.some(domain => email.endsWith(domain));
+    };
+
     const handleSubmit = async (e) => {
         // will not reload page if nothing is submitted
         e.preventDefault();
@@ -29,6 +34,14 @@ export default function RegisterForm(){
             return;
 
         }
+
+        // makes sure it is a valid email
+        if (!isValidEmail(email)) {
+            setError("Please enter a valid email address (e.g., example@gmail.com)");
+            return;
+        }
+    
+
 
         //makes sure the 2 passwords match
         if (password !== retypepassword) {
