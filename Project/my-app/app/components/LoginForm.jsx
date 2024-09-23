@@ -57,6 +57,10 @@ export default function LoginForm() {
         }
     };
 
+    const handleSpotifyLogin = () => {
+        signIn("spotify", { callbackUrl: "/dashboard" });
+    };
+
     return (
         <GoogleOAuthProvider clientId={clientId}>
         <div>
@@ -78,6 +82,14 @@ export default function LoginForm() {
                 <Link className="text-sm  m-2" href={"/register"}>
                     Don't have an account? <span className="underline">Register Here</span>
                 </Link>
+
+                {/* Spotify Login Button */}
+                <button
+                    onClick={handleSpotifyLogin}
+                    className="bg-green-600 text-white flex items-center p-2 m-2 rounded">
+                    <span className="mr-2">Login with Spotify</span>
+                </button>
+
                 <GoogleLogin
                 onSuccess={handleGoogleLogin}
                 onError={() => console.log("Login Failed")}

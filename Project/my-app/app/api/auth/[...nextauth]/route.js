@@ -3,6 +3,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import User from "../../../../models/User"; 
 import { connectMongoDB } from "../../../../lib/mongodb";
 import bcrypt from "bcryptjs";
+import SpotifyProvider from "next-auth/providers/spotify";
+
 
 export const authOptions = {
     providers: [
@@ -39,6 +41,18 @@ export const authOptions = {
                 }
             },
         }),
+
+        SpotifyProvider({
+            clientId: process.env.SPOTIFY_CLIENT_ID, 
+            clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+            authorization: {
+                params: {
+                    scope: "user-read-email playlist-read-private"
+                },
+            },
+
+        }),
+
     ],
     session: {
         strategy: "jwt",
@@ -57,6 +71,11 @@ export const authOptions = {
                 token.lName = user.lName;
                 token.username = user.username;
             }
+            if(account?.provider === "spotify"){
+                token.accessToken = account.access_token;
+                token.refreshToken = account.refresh_token; 
+            }
+
             console.log('JWT Token:', token); 
             return token;
         },
@@ -70,6 +89,8 @@ export const authOptions = {
                     lName: token.lName,
                     username: token.username,
                 };
+                session.accessToken = token.accessToken; 
+                session.refreshToken = token.refreshToken; 
             }
             console.log('Session data:', session); 
             return session;
