@@ -58,8 +58,15 @@ export default function LoginForm() {
     };
 
     const handleSpotifyLogin = () => {
-        signIn("spotify", { callbackUrl: "/dashboard" });
-    };
+            const params = new URLSearchParams({
+              response_type: 'code',
+              client_id: process.env.SPOTIFY_CLIENT_ID,
+              redirect_uri: process.env.REDIRECT_URI,
+              scope: "user-read-email playlist-read-private"
+            });
+            console.log("Redirect URI being used:", process.env.REDIRECT_URI); // Log this to ensure it's correct
+            router.replace('https://accounts.spotify.com/authorize?' + params.toString());
+    }; 
 
     return (
         <GoogleOAuthProvider clientId={clientId}>
