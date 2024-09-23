@@ -60,8 +60,8 @@ export default function LoginForm() {
     const handleSpotifyLogin = () => {
             const params = new URLSearchParams({
               response_type: 'code',
-              client_id: process.env.SPOTIFY_CLIENT_ID,
-              redirect_uri: process.env.REDIRECT_URI,
+              client_id: process.env.NEXT_PUBLIC_S_CLIENT_ID,
+              redirect_uri: process.env.NEXT_PUBLIC_S_REDIRECT_URI,
               scope: "user-read-email playlist-read-private"
             });
             console.log("Redirect URI being used:", process.env.REDIRECT_URI); // Log this to ensure it's correct
