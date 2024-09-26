@@ -19,7 +19,7 @@ export default function RegisterForm(){
     const router = useRouter();
 
     //special characters array for password for later use
-    const specialCharacters = [".","/","<"]
+    const specialCharacters = [".","/","<","!","@"]
     const numberArray = ["0","1","2","3","4","5","6","7","8","9"]
     const emailCheck = ["@gmail.com","@outlook.com","@outlook.edu"]
 

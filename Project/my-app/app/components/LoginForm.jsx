@@ -10,6 +10,7 @@ import { signOut } from "next-auth/react";
 
 const clientId = "877616753121-6hui2g63bsdib7mmt1udbrleufdhvgaj.apps.googleusercontent.com";
 
+
 export default function LoginForm() {
     const router = useRouter();
     const [email, setEmail] = useState("");
@@ -39,6 +40,7 @@ export default function LoginForm() {
             console.log("error")
         }
     };
+
     // need to fix google login
     const handleGoogleLogin = async (credentialResponse) => {
         try {
@@ -68,6 +70,7 @@ export default function LoginForm() {
             router.replace('https://accounts.spotify.com/authorize?' + params.toString());
     }; 
 
+    
     return (
         <GoogleOAuthProvider clientId={clientId}>
         <div>
