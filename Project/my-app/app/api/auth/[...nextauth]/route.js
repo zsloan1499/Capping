@@ -1,13 +1,20 @@
-import NextAuth from "next-auth";
+import NextAuth from 'next-auth/next';
 import CredentialsProvider from "next-auth/providers/credentials";
 import User from "../../../../models/User"; 
 import { connectMongoDB } from "../../../../lib/mongodb";
 import bcrypt from "bcryptjs";
 import SpotifyProvider from "next-auth/providers/spotify";
+import GoogleProvider from 'next-auth/providers/google';
 
+const ZACH_GOOGLE_CLIENT_ID = process.env.ZACH_GOOGLE_CLIENT_ID;
+const ZACH_GOOGLE_SECRET = process.env.ZACH_GOOGLE_SECRET;
 
 export const authOptions = {
     providers: [
+        GoogleProvider({
+            clientId: ZACH_GOOGLE_CLIENT_ID,
+            clientSecret: ZACH_GOOGLE_SECRET
+        }),
         CredentialsProvider({
             name: "credentials",
             credentials: {},
@@ -16,16 +23,14 @@ export const authOptions = {
 
                 try {
                     await connectMongoDB();
-                    
-
                     const user = await User.findOne({ email });
-
 
                     if (!user) {
                         console.log("User not found");
                         return null;
                     }
 
+                    // Only compare password if user logs in via credentials
                     const passwordsMatch = await bcrypt.compare(password, user.password);
 
                     if (!passwordsMatch) {
@@ -33,7 +38,6 @@ export const authOptions = {
                         return null;
                     }
 
-                    console.log("Authorized user:", user); 
                     return user;
                 } catch (error) {
                     console.error("Authorization error:", error);
@@ -41,7 +45,6 @@ export const authOptions = {
                 }
             },
         }),
-
         SpotifyProvider({
             clientId: process.env.NEXT_PUBLIC_S_CLIENT_ID, 
             clientSecret: process.env.NEXT_PUBLIC_S_CLIENT_SECRET,
@@ -50,9 +53,7 @@ export const authOptions = {
                     scope: "user-read-email playlist-read-private"
                 },
             },
-
         }),
-
     ],
     session: {
         strategy: "jwt",
@@ -62,27 +63,46 @@ export const authOptions = {
         signIn: "/",
     },
     callbacks: {
+        async signIn({ account, profile }) {
+            // Only save or update user details if the provider is Google or Spotify
+            if (account.provider === "google" || account.provider === "spotify") {
+                await connectMongoDB();
+
+                let user = await User.findOne({ email: profile.email });
+
+                if (!user) {
+                    const newUser = new User({
+                        email: profile.email,
+                        fName: profile.given_name || profile.name?.split(" ")[0],
+                        lName: profile.family_name || profile.name?.split(" ")[1] || "",
+                        username: profile.email.split("@")[0],
+                        // Do not include the password field for OAuth users
+                    });
+
+                    try {
+                        await newUser.save();
+                    } catch (error) {
+                        console.error('Error saving user:', error);
+                    }
+                }
+            }
+
+            return true;
+        },
         async jwt({ token, user }) {
             if (user) {
-
                 token.id = user._id;
                 token.email = user.email;
                 token.fName = user.fName;
                 token.lName = user.lName;
                 token.username = user.username;
             }
-            if(account?.provider === "spotify"){
-                token.accessToken = account.access_token;// Store access token from Spotify
-                token.refreshToken = account.refresh_token; // Store refresh token from Spotify
 
-            }
-
-            console.log('JWT Token:', token); // Log JWT token for debugging
+            console.log('JWT Token:', token);
             return token;
         },
         async session({ session, token }) {
             if (token) {
-
                 session.user = {
                     id: token.id,
                     email: token.email,
@@ -90,14 +110,9 @@ export const authOptions = {
                     lName: token.lName,
                     username: token.username,
                 };
-                
-            }
-            if(token.accessToken){
-                session.accessToken = token.accessToken; // Add access token to session
-                session.refreshToken = token.refreshToken; // Add refresh token to session
             }
 
-            console.log('Session data:', session);  // Log session data for debugging
+            console.log('Session data:', session);
             return session;
         },
     },

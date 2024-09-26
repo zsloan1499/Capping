@@ -3,8 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { useState, useEffect  } from "react";
 import { signOut } from "next-auth/react";
 
 const Spotify_Client_ID = "6b3bcfdc3fee47028cd6628a5959ee45"; 
@@ -43,23 +42,6 @@ export default function LoginForm() {
         }
     };
 
-    // need to fix google login
-    const handleGoogleLogin = async (credentialResponse) => {
-        try {
-            const res = await signIn("google", {
-                redirect: false,
-            });
-    
-            if (res?.error) {
-                console.log("Google login error:", res.error);
-                setError("Error logging in with Google");
-            } else {
-                router.replace("/dashboard");
-            }
-        } catch (error) {
-            console.error("Google login failed:", error);
-        }
-    };
 
     const handleSpotifyLogin = async () => {
             const params = new URLSearchParams({
@@ -73,42 +55,48 @@ export default function LoginForm() {
             window.location.href = spotifyAuthUrl; 
     }; 
 
+    // Function to handle Google Sign-in
+    const handleGoogleLogin = async () => {
+         await signIn('google', { callbackUrl: '/dashboard' });
+    };
+
     
     return (
-        <GoogleOAuthProvider clientId={clientId}>
-        <div>
-            <div className="m-2">Login Form</div>
             <div>
-                <form onSubmit={handleSubmit}>
-                    <input onChange={e => setEmail(e.target.value)} type="text" placeholder="Email" className="border border-gray-900 m-2" />
-                    <br />
-                    <input onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" className="border border-gray-900 m-2" />
-                    <br />
-                    <button className="bg-green-500 m-2 text-white w-16 font-bold cursor-pointer">Login</button>
-                </form>
-                <button onClick={() => signOut({ callbackUrl: '/' , redirect: true})} className="bg-red-600 m-2">Log Out</button>
-                {error && (
-                    <div className="bg-red-500 text-white text-sm m-2 w-fit ">
-                        {error}
-                    </div>
-                )}
-                <Link className="text-sm  m-2" href={"/register"}>
-                    Don't have an account? <span className="underline">Register Here</span>
-                </Link>
+                <div className="m-2">Login Form</div>
+                <div>
+                    <form onSubmit={handleSubmit}>
+                        <input onChange={e => setEmail(e.target.value)} type="text" placeholder="Email" className="border border-gray-900 m-2" />
+                        <br />
+                        <input onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" className="border border-gray-900 m-2" />
+                        <br />
+                        <button className="bg-green-500 m-2 text-white w-16 font-bold cursor-pointer">Login</button>
+                    </form>
+                    <button onClick={() => signOut({ callbackUrl: '/', redirect: true })} className="bg-red-600 m-2">Log Out</button>
+                    {error && (
+                        <div className="bg-red-500 text-white text-sm m-2 w-fit ">
+                            {error}
+                        </div>
+                    )}
+                    <Link className="text-sm m-2" href={"/register"}>
+                        Don't have an account? <span className="underline">Register Here</span>
+                    </Link>
 
-                {/* Spotify Login Button */}
-                <button
-                    onClick={handleSpotifyLogin}
-                    className="bg-green-600 text-white flex items-center p-2 m-2 rounded">
-                    <span className="mr-2">Login with Spotify</span>
-                </button>
+                    {/* Google Login Button */}
+                    <button
+                        onClick={handleGoogleLogin}
+                        className="bg-blue-600 text-white p-2 m-2 rounded">
+                        Login with Google
+                    </button>
 
-                <GoogleLogin
-                onSuccess={handleGoogleLogin}
-                onError={() => console.log("Login Failed")}
-                />
+                    
+                    {/* Spotify Login Button */}
+                    <button
+                        onClick={handleSpotifyLogin}
+                        className="bg-green-600 text-white flex items-center p-2 m-2 rounded">
+                        <span className="mr-2">Login with Spotify</span>
+                    </button>
+                </div>
             </div>
-        </div>
-        </GoogleOAuthProvider>
     );
 }
