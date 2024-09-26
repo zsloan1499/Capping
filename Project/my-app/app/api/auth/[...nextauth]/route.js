@@ -43,8 +43,8 @@ export const authOptions = {
         }),
 
         SpotifyProvider({
-            clientId: process.env.S_CLIENT_ID, 
-            clientSecret: process.env.S_CLIENT_SECRET,
+            clientId: process.env.NEXT_PUBLIC_S_CLIENT_ID, 
+            clientSecret: process.env.NEXT_PUBLIC_S_CLIENT_SECRET,
             authorization: {
                 params: {
                     scope: "user-read-email playlist-read-private"
@@ -72,11 +72,12 @@ export const authOptions = {
                 token.username = user.username;
             }
             if(account?.provider === "spotify"){
-                token.accessToken = account.access_token;
-                token.refreshToken = account.refresh_token; 
+                token.accessToken = account.access_token;// Store access token from Spotify
+                token.refreshToken = account.refresh_token; // Store refresh token from Spotify
+
             }
 
-            console.log('JWT Token:', token); 
+            console.log('JWT Token:', token); // Log JWT token for debugging
             return token;
         },
         async session({ session, token }) {
@@ -89,10 +90,14 @@ export const authOptions = {
                     lName: token.lName,
                     username: token.username,
                 };
-                session.accessToken = token.accessToken; 
-                session.refreshToken = token.refreshToken; 
+                
             }
-            console.log('Session data:', session); 
+            if(token.accessToken){
+                session.accessToken = token.accessToken; // Add access token to session
+                session.refreshToken = token.refreshToken; // Add refresh token to session
+            }
+
+            console.log('Session data:', session);  // Log session data for debugging
             return session;
         },
     },
