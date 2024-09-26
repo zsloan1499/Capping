@@ -7,6 +7,8 @@ import { useState } from "react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { signOut } from "next-auth/react";
 
+const Spotify_Client_ID = "6b3bcfdc3fee47028cd6628a5959ee45"; 
+const Spotify_Redirect_URI = "http://localhost:3000/dashboard";
 
 const clientId = "877616753121-6hui2g63bsdib7mmt1udbrleufdhvgaj.apps.googleusercontent.com";
 
@@ -59,15 +61,16 @@ export default function LoginForm() {
         }
     };
 
-    const handleSpotifyLogin = () => {
+    const handleSpotifyLogin = async () => {
             const params = new URLSearchParams({
               response_type: 'code',
-              client_id: process.env.NEXT_PUBLIC_S_CLIENT_ID,
-              redirect_uri: process.env.NEXT_PUBLIC_S_REDIRECT_URI,
+              client_id: process.env.NEXT_PUBLIC_S_CLIENT_ID,// Spotify Client ID from .env
+              redirect_uri: process.env.NEXT_PUBLIC_S_REDIRECT_URI,// Redirect URI from .env
               scope: "user-read-email playlist-read-private"
             });
-            console.log("Redirect URI being used:", process.env.REDIRECT_URI); // Log this to ensure it's correct
-            router.replace('https://accounts.spotify.com/authorize?' + params.toString());
+            const spotifyAuthUrl = 'https://accounts.spotify.com/authorize?' + params.toString(); 
+
+            window.location.href = spotifyAuthUrl; 
     }; 
 
     
