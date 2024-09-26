@@ -1,5 +1,5 @@
 import UserInfo from "../components/UserInfo"
-import HomePage from "../components/HomePage"
+
 export default function Dashboard() {
-    return <HomePage />
+    return <UserInfo />
 }

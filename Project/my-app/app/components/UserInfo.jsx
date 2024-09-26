@@ -1,5 +1,5 @@
 'use client';
-
+import Link from 'next/link';
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -62,6 +62,12 @@ export default function UserInfo() {
             {/* when clicked it calls the delete user */}
             <button onClick ={() => deleteAccount()} className="bg-red-600 m-2">Delete Account</button>
             {error && <div className="text-red-500 m-2">{error}</div>}
+            {/* Button that navigates to /new-page */}
+            <Link href="/dashboard">
+                <button className="bg-blue-500 text-white p-2 rounded">
+                    Go to Homepage
+                </button>
+            </Link>
         </div>
     );
 }
