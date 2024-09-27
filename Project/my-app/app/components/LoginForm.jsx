@@ -72,7 +72,6 @@ export default function LoginForm() {
                         <br />
                         <button className="bg-green-500 m-2 text-white w-16 font-bold cursor-pointer">Login</button>
                     </form>
-                    <button onClick={() => signOut({ callbackUrl: '/', redirect: true })} className="bg-red-600 m-2">Log Out</button>
                     {error && (
                         <div className="bg-red-500 text-white text-sm m-2 w-fit ">
                             {error}
