@@ -66,30 +66,54 @@ export const authOptions = {
         async signIn({ account, profile }) {
             // Only save or update user details if the provider is Google or Spotify
             if (account.provider === "google" || account.provider === "spotify") {
-                await connectMongoDB();
+                try {
+                    await connectMongoDB();
+                    console.log("Connected to MongoDB");
 
-                let user = await User.findOne({ email: profile.email });
+                    // Check if user already exists in the database
+                    let user = await User.findOne({ email: profile.email });
 
-                if (!user) {
-                    const newUser = new User({
-                        email: profile.email,
-                        fName: profile.given_name || profile.name?.split(" ")[0],
-                        lName: profile.family_name || profile.name?.split(" ")[1] || "",
-                        username: profile.email.split("@")[0],
-                        // Do not include the password field for OAuth users
-                    });
+                    // If user doesn't exist, call the register API
+                    if (!user) {
+                        const fName = profile.given_name || profile.name?.split(" ")[0];
+                        const lName = profile.family_name || profile.name?.split(" ")[1] || "";
+                        const username = profile.email.split("@")[0];  // Use part of email for username
+                        
+                        // Call the register API to create the user
+                        const res = await fetch('../../register', {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                fName,
+                                lName,
+                                username,
+                                email: profile.email,
+                                password: "", // No password for OAuth users
+                            })
+                        });
 
-                    try {
-                        await newUser.save();
-                    } catch (error) {
-                        console.error('Error saving user:', error);
+                        // Check if the user was created successfully
+                        if (res.ok) {
+                            const newUser = await res.json();
+                            console.log('New user created via API:', newUser);
+                        } else {
+                            console.error('Failed to create user:', await res.json());
+                        }
+                    } else {
+                        console.log('User already exists:', user);
                     }
+                } catch (error) {
+                    console.error('Error handling sign in:', error);
                 }
             }
 
             return true;
         },
+
         async jwt({ token, user }) {
+            // Attach additional user information to the token if user is available
             if (user) {
                 token.id = user._id;
                 token.email = user.email;
@@ -101,7 +125,9 @@ export const authOptions = {
             console.log('JWT Token:', token);
             return token;
         },
+
         async session({ session, token }) {
+            // Attach token information to the session
             if (token) {
                 session.user = {
                     id: token.id,

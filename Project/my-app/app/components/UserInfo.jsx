@@ -34,7 +34,7 @@ export default function UserInfo() {
             //if good we sign out and send back to login page
             if (response.ok) {
                 console.log("Account deleted successfully:", result);
-                signOut(); // signs the user out
+                signOut({ callbackUrl: '/' });
                 router.replace("/"); //back to login page
             } else {
                 console.error("Error deleting account:", result.error);
@@ -56,11 +56,11 @@ export default function UserInfo() {
             <button className=" m-2 border border-2 border-gray-900">Add Photo</button> <br />
 
             {/* signs user out */}
-            <button onClick={() => signOut()} className="bg-red-600 m-2">Log Out</button>
+            <button onClick={() => signOut({ callbackUrl: '/' })} className="bg-red-600 m-2">Log Out</button>
 
             <br />
             {/* when clicked it calls the delete user */}
-            <button onClick ={() => deleteAccount()} className="bg-red-600 m-2">Delete Account</button>
+            <button onClick ={() => deleteAccount({ callbackUrl: '/' })} className="bg-red-600 m-2">Delete Account</button>
             {error && <div className="text-red-500 m-2">{error}</div>}
             {/* Button that navigates to /new-page */}
             <Link href="/dashboard">

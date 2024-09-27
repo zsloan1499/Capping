@@ -31,11 +31,11 @@ export default function LoginForm() {
             console.log("signin response", res);
 
             if (res.error) {
-                setError("error logging in");
+                setError("user not found");
                 return;
             }
 
-            router.replace("dashboard");
+            router.replace("/dashboard");
             console.log("correct login");
         } catch (error) {
             console.log("error")
