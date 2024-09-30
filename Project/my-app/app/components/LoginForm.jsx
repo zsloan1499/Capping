@@ -148,6 +148,9 @@ export default function LoginForm() {
                         Login with Google
                     </button>
 
+                    <button onClick={() => signOut({ callbackUrl: '/' })} className="bg-red-600 m-2">Log Out</button>
+
+
                     
                     {/* Spotify Login Button */}
                     <button
