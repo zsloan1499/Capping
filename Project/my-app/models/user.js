@@ -1,5 +1,88 @@
 import mongoose, { Schema, models } from "mongoose";
 
+// Schema for a song
+const songSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    artist: {
+        type: String,
+        required: true,
+    },
+    customImage: {
+        type: String, // URL for the custom image
+        required: false, // Optional custom image
+    },
+}, { timestamps: true });
+
+const Song = models.Song || mongoose.model("Song", songSchema);
+
+// Schema for a review
+const reviewSchema = new Schema({
+    song: {
+        type: Schema.Types.ObjectId, // Reference to the song document
+        ref: "Song",
+        required: true,
+    },
+    user: {
+        type: Schema.Types.ObjectId, // Reference to the User who wrote the review
+        ref: "User",
+        required: true,
+    },
+    reviewText: {
+        type: String,
+        required: true,
+    },
+    likes: {
+        type: Number,
+        default: 0,
+    },
+    rating: {
+        type: Number,
+        default: 0,
+        required: true,
+    },
+    comments: [{
+        user: {
+            type: Schema.Types.ObjectId, // Reference to the user who commented
+            ref: "User",
+            required: true,
+        },
+        text: {
+            type: String,
+            required: true,
+        },
+        timestamp: {
+            type: Date,
+            default: Date.now,
+        },
+    }],
+}, { timestamps: true });
+
+const Review = models.Review || mongoose.model("Review", reviewSchema);
+
+// Schema for a playlist
+const playlistSchema = new Schema({
+    user: {
+        type: Schema.Types.ObjectId, // Reference to the user who owns the playlist
+        ref: "User",
+        required: true,
+    },
+    name: {
+        type: String, // Playlist name
+        required: true,
+    },
+    songs: [{
+        type: Schema.Types.ObjectId, // Reference to songs
+        ref: "Song",
+        required: true,
+    }],
+}, { timestamps: true });
+
+const Playlist = models.Playlist || mongoose.model("Playlist", playlistSchema);
+
+// User schema
 const userSchema = new Schema({
     fName: {
         type: String,
@@ -23,8 +106,33 @@ const userSchema = new Schema({
         type: String,
         required: false,
     },
+    profilePhoto: {
+        type: String,
+        required: true,
+        default: "https: //www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vecteezy.com%2Ffree-vector%2Fdefault-profile-picture&psig=AOvVaw0T_T2Qo0Y0h-G83HyPqMuC&ust=1727825682281000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCLjlnPXq64gDFQAAAAAdAAAAABAE",
+    },
+    likedSongs: [{
+        type: Schema.Types.ObjectId,
+        ref: "Song", // Referencing liked songs
+        required: false,
+    }],
+    playlists: [{
+        type: Schema.Types.ObjectId,
+        ref: "Playlist", // Referencing user's playlists
+        required: false,
+    }],
+    reviews: [{
+        type: Schema.Types.ObjectId,
+        ref: "Review", // Referencing user's reviews
+        required: false,
+    }],
+    rating: {
+        type: String,
+        required: false,
+    },
 }, { timestamps: true });
 
 const User = models.User || mongoose.model("User", userSchema);
 
-export default User;
+// Export each model individually
+export { User, Song, Review, Playlist };
