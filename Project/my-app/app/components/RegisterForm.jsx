@@ -21,7 +21,7 @@ export default function RegisterForm(){
     //special characters array for password for later use
     const specialCharacters = [".","/","<","!","@"]
     const numberArray = ["0","1","2","3","4","5","6","7","8","9"]
-    const emailCheck = ["@gmail.com","@outlook.com","@outlook.edu"]
+    const emailCheck = ["@gmail.com","@outlook.com","@outlook.edu", "@aol.com"]
 
     // used for email check
     const isValidEmail = (email) => {
