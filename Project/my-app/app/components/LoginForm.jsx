@@ -1,5 +1,7 @@
 'use client';
 
+
+
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -122,43 +124,31 @@ export default function LoginForm() {
 
     
     return (
-            <div>
-                <div className="m-2">Login Form</div>
-                <div>
-                    <form onSubmit={handleSubmit}>
-                        <input onChange={e => setEmail(e.target.value)} type="text" placeholder="Email" className="border border-gray-900 m-2" />
-                        <br />
-                        <input onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" className="border border-gray-900 m-2" />
-                        <br />
-                        <button className="bg-green-500 m-2 text-white w-16 font-bold cursor-pointer">Login</button>
+        <div>
+            <div className="bg-customBlue w-screen h-screen flex items-center justify-center">
+                {/* Centered box with shadow */}
+                <div className="bg-customBlue2 shadow-lg border-4 border-black p-8 rounded-lg flex flex-col items-center max-w-xl w-full">
+                <div className="text-white text-2xl mb-4">Melodi</div>
+                <div className="flex flex-col items-center">
+                    <form onSubmit={handleSubmit} className="flex flex-col items-center w-full">
+                        <input onChange={e => setEmail(e.target.value)} type="text" placeholder="Email"className="border border-gray-300 rounded p-2 w-full m-2"/>
+                        <input onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" className="border border-gray-300 rounded p-2 w-full m-2"/>
+                        <button className="bg-green-500 text-white w-full p-2 rounded m-2 font-bold cursor-pointer"> Login</button>
                     </form>
                     {error && (
-                        <div className="bg-red-500 text-white text-sm m-2 w-fit ">
-                            {error}
-                        </div>
+                    <div className="bg-red-500 text-white text-sm m-2 w-full p-2 rounded">{error}</div>
                     )}
-                    <Link className="text-sm m-2" href={"/register"}>
-                        Don't have an account? <span className="underline">Register Here</span>
-                    </Link>
-
+                    <Link className="text-sm text-white m-2" href={"/register"}> Don't have an account? <span className="underline">Register Here</span> </Link>
                     {/* Google Login Button */}
-                    <button
-                        onClick={handleGoogleLogin}
-                        className="bg-blue-600 text-white p-2 m-2 rounded">
-                        Login with Google
-                    </button>
-
-                    <button onClick={() => signOut({ callbackUrl: '/' })} className="bg-red-600 m-2">Log Out</button>
-
-
-                    
+                    <button onClick={handleGoogleLogin} className="bg-blue-600 text-white w-full p-2 rounded m-2">Login with Google</button>
                     {/* Spotify Login Button */}
-                    <button
-                        onClick={handleSpotifyLogin}
-                        className="bg-green-600 text-white flex items-center p-2 m-2 rounded">
-                        <span className="mr-2">Login with Spotify</span>
-                    </button>
+                    <button onClick={handleSpotifyLogin} className="bg-green-600 text-white w-full p-2 rounded m-2">Login with Spotify</button>
+                    {/* Log Out Button */}
+                    <button onClick={() => signOut({ callbackUrl: '/' })} className="bg-red-600 text-white w-full p-2 rounded m-2">Log Out</button>
+                    </div>
                 </div>
             </div>
+        </div>
+
     );
 }
