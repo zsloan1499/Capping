@@ -22,7 +22,7 @@ export async function POST(req) {
             email,
             username,
             password: hashedPassword,
-            profilePhoto: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vecteezy.com%2Ffree-vector%2Fdefault-profile-picture&psig=AOvVaw0T_T2Qo0Y0h-G83HyPqMuC&ust=1727825682281000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCLjlnPXq64gDFQAAAAAdAAAAABAE",  // Use provided photo or default
+            profilePhoto: "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png",  // Use provided photo or default
             likedSongs: [],   // Initialize likedSongs as an empty array
             playlists: [],    // Initialize playlists as an empty array
             reviews: [],      // Initialize reviews as an empty array
