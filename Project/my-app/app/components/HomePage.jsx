@@ -25,7 +25,7 @@ export default function HomePage() {
         {/* Navigation Links */}
         {isNavOpen && (
           <>
-            <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist</Link>
+            <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/review</Link>
             <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
             <Link href="/placeholder3" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
             <Link href="/placeholder4" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
