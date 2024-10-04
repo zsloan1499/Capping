@@ -133,6 +133,7 @@ export default function RegisterForm(){
 
     return (
         <div>
+            <title>Melodi</title>
             <div className = "m-2">Register Form</div>
             <div>
                 <form onSubmit = {handleSubmit}>

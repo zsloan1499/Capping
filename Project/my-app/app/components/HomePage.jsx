@@ -38,6 +38,7 @@ export default function HomePage() {
       </nav>
 
       {/* Main Content Area */}
+      <title>Melodi</title>
       <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>
         <div className="flex items-center justify-between">
           <h1 className="text-white text-3xl font-bold">Melodi</h1>

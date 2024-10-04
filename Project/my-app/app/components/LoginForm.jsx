@@ -125,6 +125,7 @@ export default function LoginForm() {
     
     return (
         <div>
+            <title>Melodi</title>
             <div className="bg-customBlue w-screen h-screen flex items-center justify-center">
                 {/* Centered box with shadow */}
                 <div className="bg-customBlue2 shadow-lg border-4 border-black p-8 rounded-lg flex flex-col items-center max-w-xl w-full">

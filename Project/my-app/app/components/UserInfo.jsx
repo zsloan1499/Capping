@@ -82,6 +82,7 @@ export default function UserInfo() {
 
     return (
         <div className="bg-customBlue w-screen h-screen flex justify-center items-start p-8">
+            <title>Melodi</title>
             <div className="flex">
                 {/* Profile Photo and Important Details Box */}
                 <div className="w-1/4">
