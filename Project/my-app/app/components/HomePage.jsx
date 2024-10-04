@@ -16,7 +16,7 @@ export default function HomePage() {
   return (
     <div className="bg-customBlue w-screen h-screen flex">
       {/* Left Side Navigation Bar */}
-      <nav className={`bg-black w-42 ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
+      <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
         {/* Button to open/close the navigation */}
         <button 
           className="bg-blue-500 text-white p-2 rounded mb-4 w-16" 
