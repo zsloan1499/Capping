@@ -103,7 +103,7 @@ export default function UserInfo() {
 
                 {/* User Info Section */}
                 <div className="w-3/4 bg-customBlue border-5 border-gray-500 p-8 rounded-lg ml-8">
-                    <div className="text-white text-xl mb-4">UserInfo</div>
+                    <div className="text-white text-xl mb-4">User Info</div>
 
                     <div className="text-white text-lg m-2">
                         First Name: <span className="font-bold">{session?.user?.fName || 'N/A'}</span>
