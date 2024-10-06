@@ -132,8 +132,8 @@ export default function LoginForm() {
                 <div className="text-white text-2xl mb-4">Melodi</div>
                 <div className="flex flex-col items-center">
                     <form onSubmit={handleSubmit} className="flex flex-col items-center w-full">
-                        <input onChange={e => setEmail(e.target.value)} type="text" placeholder="Email"className="border border-gray-300 rounded p-2 w-full m-2"/>
-                        <input onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" className="border border-gray-300 rounded p-2 w-full m-2"/>
+                        <input onChange={e => setEmail(e.target.value)} type="text" placeholder="Email"className="border border-gray-300 rounded p-2 w-full m-2 bg-customBlue2 text-white"/>
+                        <input onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" className="border border-gray-300 rounded p-2 w-full m-2 bg-customBlue2 text-white"/>
                         <button className="bg-green-500 text-white w-full p-2 rounded m-2 font-bold cursor-pointer"> Login</button>
                     </form>
                     {error && (

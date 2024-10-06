@@ -1,13 +1,13 @@
-'use client'
- 
-//imports
+'use client';
+
+// Imports
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function RegisterForm(){
+export default function RegisterForm() {
 
-    // variables
+    // State variables
     const [fName, setfName] = useState("");
     const [lName, setlName] = useState("");
     const [email, setEmail] = useState("");
@@ -18,53 +18,44 @@ export default function RegisterForm(){
 
     const router = useRouter();
 
-    //special characters array for password for later use
-    const specialCharacters = [".","/","<","!","@"]
-    const numberArray = ["0","1","2","3","4","5","6","7","8","9"]
-    const emailCheck = ["@gmail.com","@outlook.com","@outlook.edu", "@aol.com"]
+    // Special characters array for password validation
+    const specialCharacters = [".", "/", "<", "!", "@"];
+    const numberArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+    const emailCheck = ["@gmail.com", "@outlook.com", "@outlook.edu", "@aol.com"];
 
-    // used for email check
+    // Email validation function
     const isValidEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email pattern apparently
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email) && emailCheck.some(domain => email.endsWith(domain));
     };
 
-    // when the form is submitted make sure everythign is good
+    // Handle form submission
     const handleSubmit = async (e) => {
-        // will not reload page if nothing is submitted
         e.preventDefault();
-        // makes sure every field is filled in
-        if (!fName || !lName || !email || !username || !password || !retypepassword){
-            setError("all fields need to be filled in");
-            return;
 
+        if (!fName || !lName || !email || !username || !password || !retypepassword) {
+            setError("All fields need to be filled in");
+            return;
         }
 
-        // makes sure it is a valid email
         if (!isValidEmail(email)) {
             setError("Please enter a valid email address (e.g., example@gmail.com)");
             return;
         }
-    
 
-
-        //makes sure the 2 passwords match
         if (password !== retypepassword) {
             setError("Passwords do not match");
             return;
         }
 
-        //check password length
         if (password.length < 8) {
             setError("Password must be at least 8 characters long");
             return;
         }
 
-        // check to make sure the password has a number from array and a char from the array
         const hasSpecialChar = specialCharacters.some(char => password.includes(char));
         const hasNumber = numberArray.some(num => password.includes(num));
 
-        
         if (!hasSpecialChar) {
             setError("Password must include at least one special character");
             return;
@@ -76,104 +67,66 @@ export default function RegisterForm(){
         }
 
         try {
-
             const resUserExists = await fetch('api/userExists', {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, username }),
             });
-    
-            const { user, emailExists, usernameExists } = await resUserExists.json();
-            
+
+            const { emailExists, usernameExists, user } = await resUserExists.json();
+
             if (emailExists) {
                 setError("Email already exists");
                 return;
             }
-    
+
             if (usernameExists) {
                 setError("Username already exists");
                 return;
             }
-    
+
             if (user) {
                 setError("User already exists");
                 return;
             }
 
-            
-
-
             const res = await fetch('api/register', {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    fName,
-                    lName,
-                    username,
-                    email,
-                    password,
-                    retypepassword,
-                })
-            })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fName, lName, username, email, password, retypepassword }),
+            });
 
-            if (res.ok){
-                const form = e.target;
-                form.reset();
+            if (res.ok) {
+                e.target.reset();
                 router.push("/");
-            } else{
-                console.log("registration failed");
+            } else {
+                console.log("Registration failed");
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error(error);
+        }
     };
-
 
     return (
         <div>
             <title>Melodi</title>
-            <div className = "m-2">Register Form</div>
-            <div>
-                <form onSubmit = {handleSubmit}>
-                <label className = "m-2">First Name:</label>
-                    <br/>
-                    <input onChange = {(e) => setfName(e.target.value)} type = "text" placeholder = "First Name" className = "border border-gray-900 m-2"/>
-                    <br />
-                    <label className = "m-2">Last Name:</label>
-                    <br/>
-                    <input  onChange = {(e) => setlName(e.target.value)} type = "text" placeholder = "Last Name" className = "border border-gray-900 m-2"/>
-                    <br />
-                    <label className = "m-2">Username:</label>
-                    <br/>
-                    <input onChange = {(e) => setUsername(e.target.value)} type = "text" placeholder = "UserName" className = "border border-gray-900 m-2"/>
-                    <br/>
-                    <label className = "m-2">Email:</label>
-                    <br/>
-                    <input  onChange = {(e) => setEmail(e.target.value)}type = "text" placeholder = "Email" className = "border border-gray-900 m-2"/>
-                    <br/>
-                    <label  className = "m-2">Password:</label>
-                    <br/>
-                    <input onChange = {(e) => setPassword(e.target.value)} type = "password" placeholder = "Password" className = "border border-gray-900 m-2" />
-                    <br/>
-                    <label className = "m-2">Retype Password:</label>
-                    <br/>
-                    <input onChange = {(e) => setRetypePassword(e.target.value)} type = "password" placeholder = "Password" className = "border border-gray-900 m-2" />
-                    <br/>
-                    <button type = "submit" className = "bg-green-500 m-2 text-white w-16 font-bold cursor-pointer">Register</button>
-                    { error && (
-                        <div className = "bg-red-500 text-white text-sm m-2 w-fit ">
-                            {error}
-                        </div>
-                        )
-                    }
-                    <Link className = "text-sm  m-2"href={'/'}>
-                        Already have an account? <span className = "underline">Login </span>
-                    </Link>
-                </form>
+            <div className="bg-customBlue w-screen h-screen flex items-center justify-center">
+                {/* Centered box with shadow */}
+                <div className="bg-customBlue2 shadow-lg border-4 border-black p-8 rounded-lg flex flex-col items-center max-w-xl w-full">
+                    <div className="text-white text-2xl mb-4">Register for Melodi</div>
+                    <form onSubmit={handleSubmit} className="flex flex-col items-center w-full">
+                        <input onChange={e => setfName(e.target.value)} type="text" placeholder="First Name" className="border border-gray-300 rounded p-2 w-full m-2 bg-customBlue2 text-white" />
+                        <input onChange={e => setlName(e.target.value)} type="text" placeholder="Last Name" className="border border-gray-300 rounded p-2 w-full m-2 bg-customBlue2 text-white" />
+                        <input onChange={e => setUsername(e.target.value)} type="text" placeholder="Username" className="border border-gray-300 rounded p-2 w-full m-2 bg-customBlue2 text-white" />
+                        <input onChange={e => setEmail(e.target.value)} type="email" placeholder="Email" className="border border-gray-300 rounded p-2 w-full m-2 bg-customBlue2 text-white" />
+                        <input onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" className="border border-gray-300 rounded p-2 w-full m-2 bg-customBlue2 text-white" />
+                        <input onChange={e => setRetypePassword(e.target.value)} type="password" placeholder="Retype Password" className="border border-gray-300 rounded p-2 w-full m-2 bg-customBlue2 text-white" />
+                        <button type="submit" className="bg-green-500 text-white w-full p-2 rounded m-2 font-bold cursor-pointer">Register</button>
+                    </form>
+                    {error && <div className="bg-red-500 text-white text-sm m-2 w-full p-2 rounded">{error}</div>}
+                    <Link className="text-sm text-white m-2" href={'/'}>Already have an account? <span className="underline">Login</span></Link>
+                </div>
             </div>
         </div>
     );
-
 }
