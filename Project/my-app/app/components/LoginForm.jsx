@@ -14,67 +14,6 @@ export default function LoginForm() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
-    //handling spotify access token 
-    useEffect(() => {
-        const code = new URLSearchParams(window.location.search).get("code");
-        if (code) {
-            exchangeCodeForToken(code);
-        }
-    },[]);
-
-        // Function to exchange the authorization code for access and refresh tokens
-    const exchangeCodeForToken = async (code) => {
-        try {
-            const response = await fetch("https://accounts.spotify.com/api/token", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Authorization": "Basic " + btoa(process.env.NEXT_PUBLIC_S_CLIENT_ID + ":" + process.env.NEXT_PUBLIC_S_CLIENT_SECRET)
-                },
-                body: new URLSearchParams({
-                    grant_type: "authorization_code",
-                    code: code,
-                    redirect_uri: process.env.NEXT_PUBLIC_S_REDIRECT_URI,
-                    client_id: process.env.NEXT_PUBLIC_S_CLIENT_ID,
-                    client_secret: process.env.NEXT_PUBLIC_S_CLIENT_SECRET,
-                })
-            });
-
-            const data = await response.json();
-
-            // Check if the access_token is present
-            if (response.ok && data.access_token) {
-                // Successfully received access token and refresh token
-                console.log("Access Token:", data.access_token);
-                console.log("Refresh Token:", data.refresh_token);
-                // You can store the access token and use it to make API requests
-                await getSpotifyUserProfile(data.access_token);
-            } else {
-                console.error("Error exchanging code for token:", data.error);
-            }
-        } catch (error) {
-            console.error("Error exchanging code for token:", error);
-        }
-    };
-
-    // Function to get the user's Spotify profile
-    const getSpotifyUserProfile = async (accessToken) => {
-        try {
-            const response = await fetch("https://api.spotify.com/v1/me", {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`  // Use the access token here
-                }
-            });
-            if (response.ok) {
-                const userData = await response.json();
-                console.log("User Profile Data:", userData); // Handle user data as needed
-            } else {
-                console.error("Error fetching user profile:", response.statusText);
-            }
-        } catch (error) {
-            console.error("Error fetching user profile:", error);
-        }
-    };
 
 
 
@@ -105,17 +44,7 @@ export default function LoginForm() {
     };
 
 
-    const handleSpotifyLogin = async () => {
-            const params = new URLSearchParams({
-              response_type: 'code',
-              client_id: process.env.NEXT_PUBLIC_S_CLIENT_ID,// Spotify Client ID from .env
-              redirect_uri: process.env.NEXT_PUBLIC_S_REDIRECT_URI,// Redirect URI from .env
-              scope: "user-read-email playlist-read-private"
-            });
-            const spotifyAuthUrl = 'https://accounts.spotify.com/authorize?' + params.toString(); 
 
-            window.location.href = spotifyAuthUrl; 
-    }; 
 
     // Function to handle Google Sign-in
     const handleGoogleLogin = async () => {
@@ -142,8 +71,6 @@ export default function LoginForm() {
                     <Link className="text-sm text-white m-2" href={"/register"}> Don't have an account? <span className="underline">Register Here</span> </Link>
                     {/* Google Login Button */}
                     <button onClick={handleGoogleLogin} className="bg-blue-600 text-white w-full p-2 rounded m-2">Login with Google</button>
-                    {/* Spotify Login Button */}
-                    <button onClick={handleSpotifyLogin} className="bg-green-600 text-white w-full p-2 rounded m-2">Login with Spotify</button>
                     {/* Log Out Button */}
                     <button onClick={() => signOut({ callbackUrl: '/' })} className="bg-red-600 text-white w-full p-2 rounded m-2">Log Out</button>
                     </div>
