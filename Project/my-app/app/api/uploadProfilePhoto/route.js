@@ -32,7 +32,7 @@ export async function POST(req) {
     try {
         // Generate a presigned URL with a 7-day expiration
         const command = new PutObjectCommand(params);
-        const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 604800 }); // 604800 seconds = 7 days
+        const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 300000 }); // 604800 seconds = 7 days
         
         // Now you can use this presigned URL to upload the file directly to S3
         const uploadResponse = await fetch(presignedUrl, {

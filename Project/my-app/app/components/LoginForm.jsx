@@ -15,10 +15,6 @@ export default function LoginForm() {
     const [error, setError] = useState("");
 
 
-
-
-
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
