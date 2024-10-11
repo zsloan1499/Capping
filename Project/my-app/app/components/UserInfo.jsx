@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { signOut, signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function UserInfo() {
     const { data: session } = useSession();
@@ -11,12 +11,80 @@ export default function UserInfo() {
     const [username, setUsername] = useState(session?.user?.username || '');
     const [showUsernameForm, setShowUsernameForm] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [profilePhoto, setProfilePhoto] = useState(session?.user?.profilePhoto || session?.user?.image || "");
+    const [profilePhoto, setProfilePhoto] = useState("");
 
     // Debugging log to check the URL
     console.log("Profile Photo URL:", profilePhoto);
 
-    // Deletes user account
+
+    // Handle Spotify access token (unchanged)
+    useEffect(() => {
+        const code = new URLSearchParams(window.location.search).get("code");
+        if (code) {
+            exchangeCodeForToken(code);
+        }
+    }, []);
+
+    const exchangeCodeForToken = async (code) => {
+        try {
+            const response = await fetch("https://accounts.spotify.com/api/token", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Authorization": "Basic " + btoa(process.env.NEXT_PUBLIC_S_CLIENT_ID + ":" + process.env.NEXT_PUBLIC_S_CLIENT_SECRET)
+                },
+                body: new URLSearchParams({
+                    grant_type: "authorization_code",
+                    code: code,
+                    redirect_uri: process.env.NEXT_PUBLIC_S_REDIRECT_URI,
+                    client_id: process.env.NEXT_PUBLIC_S_CLIENT_ID,
+                    client_secret: process.env.NEXT_PUBLIC_S_CLIENT_SECRET,
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.access_token) {
+                console.log("Access Token:", data.access_token);
+                await getSpotifyUserProfile(data.access_token);
+            } else {
+                console.error("Error exchanging code for token:", data.error);
+            }
+        } catch (error) {
+            console.error("Error exchanging code for token:", error);
+        }
+    };
+
+    const getSpotifyUserProfile = async (accessToken) => {
+        try {
+            const response = await fetch("https://api.spotify.com/v1/me", {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            if (response.ok) {
+                const userData = await response.json();
+                console.log("User Profile Data:", userData);
+            } else {
+                console.error("Error fetching user profile:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+        }
+    };
+
+    const handleSpotifyLogin = async () => {
+        const params = new URLSearchParams({
+            response_type: 'code',
+            client_id: process.env.NEXT_PUBLIC_S_CLIENT_ID,
+            redirect_uri: process.env.NEXT_PUBLIC_S_REDIRECT_URI,
+            scope: "user-read-email playlist-read-private"
+        });
+        const spotifyAuthUrl = 'https://accounts.spotify.com/authorize?' + params.toString();
+        window.location.href = spotifyAuthUrl;
+    };
+
+    // Deletes user account (unchanged)
     const deleteAccount = async () => {
         if (!session?.user?.email) {
             setError("Email not found.");
@@ -49,65 +117,95 @@ export default function UserInfo() {
     };
 
     // Change username
-    const changeUsername = async (e) => {
-        e.preventDefault();
+// Change username
+// Change username
+const changeUsername = async (e) => {
+    e.preventDefault();
 
-        if (!newUsername.trim()) {
-            setError("Username is required.");
-            return;
-        }
+    // Check for empty username
+    if (!newUsername.trim()) {
+        setError("Username is required.");
+        return;
+    }
 
-        try {
-            const response = await fetch('/api/changeUsername', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username: newUsername, userId: session.user.id }),
+    try {
+        const response = await fetch('/api/changeUsername', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: newUsername, userId: session.user.id }),
+        });
+
+        const result = await response.json();
+
+        // Handle username existence and success response
+        if (result.usernameExists) {
+            setError("Username already exists.");
+        } else if (result.success) {
+            setUsername(newUsername); // Update local state with new username
+            setNewUsername("");
+            setError("");
+            setShowUsernameForm(false);
+            
+            // Step 1: Sign out the user
+            await signOut({ redirect: false }); // Prevent redirect to the login page
+
+            // Optional: Add a short delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Step 2: Prompt user for password
+            const password = prompt("Please enter your password to sign back in:");
+
+            // Check if password was provided
+            if (!password) {
+                setError("Password is required to sign back in.");
+                return;
+            }
+
+            // Sign in the user again with credentials to refresh session data
+            const updatedSession = await signIn("credentials", {
+                email: session.user.email,
+                password: password, // Use the provided password
+                redirect: false // Prevent redirect after sign in
             });
 
-            const result = await response.json();
-
-            if (result.usernameExists) {
-                setError("Username already exists.");
-            } else if (result.success) {
-                setUsername(newUsername);
-                setNewUsername("");
-                setError("");
-                setShowUsernameForm(false);
-            } else {
-                setError(result.error || "Username change failed.");
+            if (updatedSession.error) {
+                console.error("Sign-in error:", updatedSession.error); // Log the specific error
+                setError("Error signing back in. Please try again.");
             }
-        } catch (error) {
-            setError("An unexpected error occurred. Please try again.");
+        } else {
+            setError(result.error || "Username change failed.");
         }
-    };
+    } catch (error) {
+        console.error("Unexpected error:", error); // Log unexpected errors
+        setError("An unexpected error occurred. Please try again.");
+    }
+};
 
     // Change profile photo
     const handlePhotoChange = async (e) => {
         e.preventDefault();
-
+    
         if (!selectedFile) {
             setError("Please select a file.");
             return;
         }
-
+    
         const formData = new FormData();
         formData.append("file", selectedFile);
-
+    
         try {
             const response = await fetch("/api/uploadProfilePhoto", {
                 method: "POST",
                 body: formData, // Send the file as form-data
             });
-
+    
             const result = await response.json();
-
+    
+            // After updating the profile photo
             if (result.success) {
-                // Step 1: Update the local state with the new profile photo URL
-                setProfilePhoto(result.profilePhotoUrl); // Update the UI with the new profile photo
-                
-                // Step 2: Update the MongoDB database with the new profile photo URL
+                // Step 2: Update MongoDB with the new profile photo URL
                 const updateResponse = await fetch('/api/updateProfilePhoto', {
                     method: 'POST',
                     headers: {
@@ -115,20 +213,48 @@ export default function UserInfo() {
                     },
                     body: JSON.stringify({ userId: session.user.id, profilePhotoUrl: result.profilePhotoUrl }),
                 });
-
+    
                 const updateResult = await updateResponse.json();
-
+    
                 if (!updateResult.success) {
                     setError(updateResult.error || "Failed to update profile photo in the database.");
-                } else {
-                    setError(""); // Clear any errors if the update was successful
-                    // Refresh session to get updated user data
-                    await signIn("credentials", { redirect: false }); // Refresh session
+                    return;
+                }
+    
+                setProfilePhoto(result.profilePhotoUrl); // Update the local state with the new profile photo URL
+                setError(""); // Clear any errors if the update was successful
+    
+                // Step 3: Sign out the user
+                await signOut({ redirect: false }); // Prevent redirect to the login page
+    
+                // Optional: Add a short delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+    
+                // Step 4: Prompt user for password
+                const password = prompt("Please enter your password to sign back in:");
+    
+                // Check if password was provided
+                if (!password) {
+                    setError("Password is required to sign back in.");
+                    return;
+                }
+    
+                // Sign in the user again with credentials to refresh session data
+                const updatedSession = await signIn("credentials", {
+                    email: session.user.email,
+                    password: password, // Use the provided password
+                    redirect: false // Prevent redirect after sign in
+                });
+    
+                if (updatedSession.error) {
+                    console.error("Sign-in error:", updatedSession.error); // Log the specific error
+                    setError("Error signing back in. Please try again.");
                 }
             } else {
                 setError(result.error || "Failed to update profile photo.");
             }
         } catch (error) {
+            console.error("An unexpected error occurred:", error);
             setError("An unexpected error occurred. Please try again.");
         }
     };
@@ -141,7 +267,7 @@ export default function UserInfo() {
                 <div className="w-1/4">
                     <div className="flex flex-col items-center">
                         <img
-                            src={profilePhoto ? `${profilePhoto}?t=${new Date().getTime()}` : 'https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png'}
+                            src={session?.user?.profilePhoto}
                             alt="Profile Photo"
                             className="w-48 h-48 rounded-full border-2 border-gray-500"
                         />
@@ -165,12 +291,12 @@ export default function UserInfo() {
                     <div className="text-white text-xl mb-4">User Info</div>
                     <div className="text-white text-lg m-2">
                         First Name: <span className="font-bold">{session?.user?.fName || 'N/A'}</span>
-                    </div>
+                        </div>
                     <div className="text-white text-lg m-2">
                         Last Name: <span className="font-bold">{session?.user?.lName || 'N/A'}</span>
                     </div>
                     <div className="text-white text-lg m-2">
-                        UserName: <span className="font-bold">{username || 'N/A'}</span>
+                        UserName: <span className="font-bold">{session?.user?.username || 'N/A'}</span>
                         <button
                             onClick={() => setShowUsernameForm(!showUsernameForm)}
                             className="ml-2 text-gray-200">
@@ -203,6 +329,11 @@ export default function UserInfo() {
 
                     <button onClick={deleteAccount} className="bg-red-600 text-white p-2 rounded m-2">
                         Delete Account
+                    </button>
+
+                    {/* Spotify Login Button */}
+                    <button onClick={handleSpotifyLogin} className="bg-green-600 text-white w-full p-2 rounded m-2">
+                        Login with Spotify
                     </button>
 
                     <Link href="/dashboard">
