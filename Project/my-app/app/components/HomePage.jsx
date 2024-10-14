@@ -21,7 +21,7 @@ export default function HomePage() {
   };
 
   const carouselContainerStyle = {
-    width: '100vw',  // Take full screen width
+    width: '80vw',  // Take full screen width
     overflow: 'hidden',  // Prevent overflow of carousel items
     margin: '0 auto',    // Center the carousel container
   };
@@ -101,7 +101,52 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Carousel Section */}
+        {/* Carousel Section - Your Top Artists */}
+        <div style={carouselContainerStyle} className="w-full">
+          <Carousel responsive={responsive} arrows={true}>
+            <div style={itemStyle}>Item 1</div>
+            <div style={itemStyle}>Item 2</div>
+            <div style={itemStyle}>Item 3</div>
+            <div style={itemStyle}>Item 4</div>
+            <div style={itemStyle}>Item 5</div>
+            <div style={itemStyle}>Item 6</div>
+            <div style={itemStyle}>Item 7</div>
+            <div style={itemStyle}>Item 8</div>
+            <div style={itemStyle}>Item 9</div>
+          </Carousel>
+        </div>
+
+        {/* Carousel Section - Your Playlists */}
+        <div style={carouselContainerStyle} className="w-full">
+          <Carousel responsive={responsive} arrows={true}>
+            <div style={itemStyle}>Item 1</div>
+            <div style={itemStyle}>Item 2</div>
+            <div style={itemStyle}>Item 3</div>
+            <div style={itemStyle}>Item 4</div>
+            <div style={itemStyle}>Item 5</div>
+            <div style={itemStyle}>Item 6</div>
+            <div style={itemStyle}>Item 7</div>
+            <div style={itemStyle}>Item 8</div>
+            <div style={itemStyle}>Item 9</div>
+          </Carousel>
+        </div>
+
+        {/* Carousel Section - Friends */}
+        <div style={carouselContainerStyle} className="w-full">
+          <Carousel responsive={responsive} arrows={true}>
+            <div style={itemStyle}>Item 1</div>
+            <div style={itemStyle}>Item 2</div>
+            <div style={itemStyle}>Item 3</div>
+            <div style={itemStyle}>Item 4</div>
+            <div style={itemStyle}>Item 5</div>
+            <div style={itemStyle}>Item 6</div>
+            <div style={itemStyle}>Item 7</div>
+            <div style={itemStyle}>Item 8</div>
+            <div style={itemStyle}>Item 9</div>
+          </Carousel>
+        </div>
+
+        {/* Carousel Section - Reviews*/}
         <div style={carouselContainerStyle} className="w-full">
           <Carousel responsive={responsive} arrows={true}>
             <div style={itemStyle}>Item 1</div>
