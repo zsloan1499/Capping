@@ -10,21 +10,20 @@ import "react-multi-carousel/lib/styles.css";
 export default function HomePage() {
   const { data: session } = useSession(); 
   const [isNavOpen, setIsNavOpen] = useState(false);
+
   const itemStyle = {
-    width: '0 0 200px',
-    height: '150px',
-    backgroundColor: '#f3f4f6',
+    width: '100%',  // Ensure each item takes up full width of the carousel container
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'center',
-    border: '1px solid #ccc',
-    margin: '0 5px', 
-    boxSizing: 'border-box', 
+    alignItems: 'center',
+    height: '200px', // Example height, adjust as needed
+    backgroundColor: '#f0f0f0', // Example background color
   };
 
   const carouselContainerStyle = {
-    maxWidth: '100%', 
-    overflow: 'hidden', 
+    width: '100vw',  // Take full screen width
+    overflow: 'hidden',  // Prevent overflow of carousel items
+    margin: '0 auto',    // Center the carousel container
   };
 
   const responsive = {
@@ -51,7 +50,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="bg-customBlue w-screen h-screen flex">
+    <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
       {/* Left Side Navigation Bar */}
       <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
         {/* Button to open/close the navigation */}
@@ -101,12 +100,19 @@ export default function HomePage() {
             </button>
           </div>
         </div>
-        <div style={carouselContainerStyle} className='w-full'>
+
+        {/* Carousel Section */}
+        <div style={carouselContainerStyle} className="w-full">
           <Carousel responsive={responsive} arrows={true}>
             <div style={itemStyle}>Item 1</div>
             <div style={itemStyle}>Item 2</div>
             <div style={itemStyle}>Item 3</div>
             <div style={itemStyle}>Item 4</div>
+            <div style={itemStyle}>Item 5</div>
+            <div style={itemStyle}>Item 6</div>
+            <div style={itemStyle}>Item 7</div>
+            <div style={itemStyle}>Item 8</div>
+            <div style={itemStyle}>Item 9</div>
           </Carousel>
         </div>
       </div>
