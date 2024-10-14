@@ -117,92 +117,92 @@ export default function UserInfo() {
     };
 
     // Change username
-// Change username
-// Change username
-const changeUsername = async (e) => {
-    e.preventDefault();
+    // Change username
+    // Change username
+    const changeUsername = async (e) => {
+        e.preventDefault();
 
-    // Check for empty username
-    if (!newUsername.trim()) {
-        setError("Username is required.");
-        return;
-    }
+        // Check for empty username
+        if (!newUsername.trim()) {
+            setError("Username is required.");
+            return;
+        }
 
-    try {
-        const response = await fetch('/api/changeUsername', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username: newUsername, userId: session.user.id }),
-        });
-
-        const result = await response.json();
-
-        // Handle username existence and success response
-        if (result.usernameExists) {
-            setError("Username already exists.");
-        } else if (result.success) {
-            setUsername(newUsername); // Update local state with new username
-            setNewUsername("");
-            setError("");
-            setShowUsernameForm(false);
-            
-            // Step 1: Sign out the user
-            await signOut({ redirect: false }); // Prevent redirect to the login page
-
-            // Optional: Add a short delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Step 2: Prompt user for password
-            const password = prompt("Please enter your password to sign back in:");
-
-            // Check if password was provided
-            if (!password) {
-                setError("Password is required to sign back in.");
-                return;
-            }
-
-            // Sign in the user again with credentials to refresh session data
-            const updatedSession = await signIn("credentials", {
-                email: session.user.email,
-                password: password, // Use the provided password
-                redirect: false // Prevent redirect after sign in
+        try {
+            const response = await fetch('/api/changeUsername', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: newUsername, userId: session.user.id }),
             });
 
-            if (updatedSession.error) {
-                console.error("Sign-in error:", updatedSession.error); // Log the specific error
-                setError("Error signing back in. Please try again.");
+            const result = await response.json();
+
+            // Handle username existence and success response
+            if (result.usernameExists) {
+                setError("Username already exists.");
+            } else if (result.success) {
+                setUsername(newUsername); // Update local state with new username
+                setNewUsername("");
+                setError("");
+                setShowUsernameForm(false);
+
+                // Step 1: Sign out the user
+                await signOut({ redirect: false }); // Prevent redirect to the login page
+
+                // Optional: Add a short delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Step 2: Prompt user for password
+                const password = prompt("Please enter your password to sign back in:");
+
+                // Check if password was provided
+                if (!password) {
+                    setError("Password is required to sign back in.");
+                    return;
+                }
+
+                // Sign in the user again with credentials to refresh session data
+                const updatedSession = await signIn("credentials", {
+                    email: session.user.email,
+                    password: password, // Use the provided password
+                    redirect: false // Prevent redirect after sign in
+                });
+
+                if (updatedSession.error) {
+                    console.error("Sign-in error:", updatedSession.error); // Log the specific error
+                    setError("Error signing back in. Please try again.");
+                }
+            } else {
+                setError(result.error || "Username change failed.");
             }
-        } else {
-            setError(result.error || "Username change failed.");
+        } catch (error) {
+            console.error("Unexpected error:", error); // Log unexpected errors
+            setError("An unexpected error occurred. Please try again.");
         }
-    } catch (error) {
-        console.error("Unexpected error:", error); // Log unexpected errors
-        setError("An unexpected error occurred. Please try again.");
-    }
-};
+    };
 
     // Change profile photo
     const handlePhotoChange = async (e) => {
         e.preventDefault();
-    
+
         if (!selectedFile) {
             setError("Please select a file.");
             return;
         }
-    
+
         const formData = new FormData();
         formData.append("file", selectedFile);
-    
+
         try {
             const response = await fetch("/api/uploadProfilePhoto", {
                 method: "POST",
                 body: formData, // Send the file as form-data
             });
-    
+
             const result = await response.json();
-    
+
             // After updating the profile photo
             if (result.success) {
                 // Step 2: Update MongoDB with the new profile photo URL
@@ -213,39 +213,39 @@ const changeUsername = async (e) => {
                     },
                     body: JSON.stringify({ userId: session.user.id, profilePhotoUrl: result.profilePhotoUrl }),
                 });
-    
+
                 const updateResult = await updateResponse.json();
-    
+
                 if (!updateResult.success) {
                     setError(updateResult.error || "Failed to update profile photo in the database.");
                     return;
                 }
-    
+
                 setProfilePhoto(result.profilePhotoUrl); // Update the local state with the new profile photo URL
                 setError(""); // Clear any errors if the update was successful
-    
+
                 // Step 3: Sign out the user
                 await signOut({ redirect: false }); // Prevent redirect to the login page
-    
+
                 // Optional: Add a short delay
                 await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
                 // Step 4: Prompt user for password
                 const password = prompt("Please enter your password to sign back in:");
-    
+
                 // Check if password was provided
                 if (!password) {
                     setError("Password is required to sign back in.");
                     return;
                 }
-    
+
                 // Sign in the user again with credentials to refresh session data
                 const updatedSession = await signIn("credentials", {
                     email: session.user.email,
                     password: password, // Use the provided password
                     redirect: false // Prevent redirect after sign in
                 });
-    
+
                 if (updatedSession.error) {
                     console.error("Sign-in error:", updatedSession.error); // Log the specific error
                     setError("Error signing back in. Please try again.");
@@ -291,7 +291,7 @@ const changeUsername = async (e) => {
                     <div className="text-white text-xl mb-4">User Info</div>
                     <div className="text-white text-lg m-2">
                         First Name: <span className="font-bold">{session?.user?.fName || 'N/A'}</span>
-                        </div>
+                    </div>
                     <div className="text-white text-lg m-2">
                         Last Name: <span className="font-bold">{session?.user?.lName || 'N/A'}</span>
                     </div>
