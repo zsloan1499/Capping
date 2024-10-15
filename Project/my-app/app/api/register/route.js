@@ -26,6 +26,7 @@ export async function POST(req) {
             likedSongs: [],   // Initialize likedSongs as an empty array
             playlists: [],    // Initialize playlists as an empty array
             reviews: [],      // Initialize reviews as an empty array
+            friends: [],    // empty array of friends
         });
 
         return NextResponse.json({ message: "User Registered", user: newUser }, { status: 201 });

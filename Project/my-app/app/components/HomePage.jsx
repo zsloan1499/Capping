@@ -67,7 +67,7 @@ export default function HomePage() {
             <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/Review</Link>
             <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
             <Link href="/placeholder3" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
-            <Link href="/placeholder4" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
+            <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
             <Link href="/placeholder5" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
           </>
         )}
