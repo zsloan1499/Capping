@@ -130,10 +130,10 @@ const userSchema = new Schema({
         type: String,
         required: false,
     },
-    friends: {
+    friends: [{
         type: String,
         required: false,
-    },
+    }],
 }, { timestamps: true });
 
 const User = models.User || mongoose.model("User", userSchema);

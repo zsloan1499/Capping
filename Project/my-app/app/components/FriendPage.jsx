@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'; // Import useState for managing state
 import { useSession } from "next-auth/react";
-import axios from 'axios';
 
 export default function FriendPage() {
     const { data: session } = useSession();
@@ -10,21 +9,21 @@ export default function FriendPage() {
     const [friends, setFriends] = useState([]);
 
     useEffect(() => {
-        // Fetch users who are not in the current user's friends list
         if (session?.user) {
             const fetchUsers = async () => {
                 try {
-                    const response = await fetch(`/api/friends/getFriendList?userId=${session.user.id}`, {
-                        method: 'GET',
+                    const response = await fetch('/api/getfriendList', {
+                        method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                        }
+                        },
+                        body: JSON.stringify({ userId: session.user.id }),  // Send the userId in the body
                     });
     
                     const result = await response.json();
     
                     if (response.ok) {
-                        setUsers(result); // Assuming your API returns the users list directly
+                        setUsers(result); 
                     } else {
                         console.error("Error fetching users", result.error);
                     }
@@ -35,15 +34,33 @@ export default function FriendPage() {
             fetchUsers();
         }
     }, [session]);
+    
 
     const addFriend = async (username) => {
         try {
-            await axios.post("/api/friends/addFriend", { userId: session.user.id, friendUsername: username });
-            setFriends((prev) => [...prev, username]); // Add friend to the state
+            const response = await fetch("/api/addFriend", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: session.user.id, // Send current user's ID
+                    friendUsername: username  // Send the friend's username
+                })
+            });
+    
+            const result = await response.json();
+    
+            if (response.ok) {
+                setFriends((prev) => [...prev, username]); // Add friend to the state
+            } else {
+                console.error("Error adding friend:", result.error);
+            }
         } catch (error) {
-            console.error("Error adding friend", error);
+            console.error("Error adding friend:", error);
         }
     };
+    
 
     return (
         <div className="w-full h-screen p-8 bg-gray-100">

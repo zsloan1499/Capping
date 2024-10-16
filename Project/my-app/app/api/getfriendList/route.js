@@ -1,14 +1,13 @@
-import { connectMongoDB } from "../../../../lib/mongodb";
-import { User } from "../../../../models/User";
+import { connectMongoDB } from "../../../lib/mongodb";
+import { User, Song, Review, Playlist } from "../../../models/User"; 
 import { NextResponse } from "next/server";
 
-export async function GET(req) {
+export async function POST(req) {
     try {
         // Connect to MongoDB
         await connectMongoDB();
 
-        const { searchParams } = new URL(req.url);
-        const userId = searchParams.get("userId");
+        const { userId } = await req.json();  // Extract userId from the request body
 
         if (!userId) {
             return NextResponse.json({ error: "User ID is required" }, { status: 400 });
@@ -21,7 +20,6 @@ export async function GET(req) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        // Check if the user has friends, if not, return all users
         const friendList = currentUser.friends || [];
 
         // Find users who are not in the current user's friends list
