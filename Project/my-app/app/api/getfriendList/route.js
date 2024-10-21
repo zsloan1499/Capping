@@ -1,5 +1,5 @@
 import { connectMongoDB } from "../../../lib/mongodb";
-import { User, Song, Review, Playlist } from "../../../models/User"; 
+import { User } from "../../../models/User";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -7,7 +7,7 @@ export async function POST(req) {
         // Connect to MongoDB
         await connectMongoDB();
 
-        const { userId } = await req.json();  // Extract userId from the request body
+        const { userId } = await req.json(); // Extract userId from the request body
 
         if (!userId) {
             return NextResponse.json({ error: "User ID is required" }, { status: 400 });
@@ -22,9 +22,9 @@ export async function POST(req) {
 
         const friendList = currentUser.friends || [];
 
-        // Find users who are not in the current user's friends list
+        // Find users who are not in the current user's friends list and exclude the current user
         const users = await User.find({
-            _id: { $nin: friendList }, // Exclude users in friend list
+            _id: { $nin: [...friendList, userId] }, // Exclude users in friend list and the current user
         }).select("username");
 
         return NextResponse.json(users);

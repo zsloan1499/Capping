@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react'; // Import useState for managing state
+import { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
 
 export default function FriendPage() {
     const { data: session } = useSession();
-    const [users, setUsers] = useState([]);
-    const [friends, setFriends] = useState([]);
+    const [users, setUsers] = useState([]);         // List of users available to follow
+    const [following, setFollowing] = useState([]); // List of users the current user is following
 
     useEffect(() => {
         if (session?.user) {
@@ -23,7 +23,7 @@ export default function FriendPage() {
                     const result = await response.json();
     
                     if (response.ok) {
-                        setUsers(result); 
+                        setUsers(result);  // Set users available to follow
                     } else {
                         console.error("Error fetching users", result.error);
                     }
@@ -35,10 +35,9 @@ export default function FriendPage() {
         }
     }, [session]);
     
-
-    const addFriend = async (username) => {
+    const addFollowing = async (username) => {
         try {
-            const response = await fetch("/api/addFriend", {
+            const response = await fetch("/api/addFollower", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -52,12 +51,12 @@ export default function FriendPage() {
             const result = await response.json();
     
             if (response.ok) {
-                setFriends((prev) => [...prev, username]); // Add friend to the state
+                setFollowing((prev) => [...prev, username]); // Add user to the following list in state
             } else {
-                console.error("Error adding friend:", result.error);
+                console.error("Error adding follower:", result.error);
             }
         } catch (error) {
-            console.error("Error adding friend:", error);
+            console.error("Error following user:", error);
         }
     };
     
@@ -70,11 +69,11 @@ export default function FriendPage() {
                     <div key={user.username} className="flex justify-between items-center p-4 bg-white shadow rounded-lg">
                         <span>{user.username}</span>
                         <button
-                            className={`px-4 py-2 rounded ${friends.includes(user.username) ? "bg-green-500" : "bg-blue-500"} text-white`}
-                            onClick={() => addFriend(user.username)}
-                            disabled={friends.includes(user.username)} // Disable the button if the user is already added
+                            className={`px-4 py-2 rounded ${following.includes(user.username) ? "bg-green-500" : "bg-blue-500"} text-white`}
+                            onClick={() => addFollowing(user.username)}
+                            disabled={following.includes(user.username)} // Disable the button if the user is already added
                         >
-                            {friends.includes(user.username) ? "Added" : "+ Add Friend"}
+                            {following.includes(user.username) ? "Added" : "+ Add Friend"}
                         </button>
                     </div>
                 ))}
