@@ -7,24 +7,32 @@ export async function POST(req) {
         // Connect to MongoDB
         await connectMongoDB();
 
-        const { userId } = await req.json(); // Extract userId from the request body
+        const { userId } = await req.json();  // Extract userId from the request body
 
+        // Validate userId
         if (!userId) {
-            return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+            return NextResponse.json({ error: "A valid User ID is required" }, { status: 400 });
         }
 
-        // Get current user's friend list
-        const currentUser = await User.findById(userId).select("friends");
-
+        // Get current user's following list
+        const currentUser = await User.findById(userId);
         if (!currentUser) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        const friendList = currentUser.friends || [];
+        const followingList = currentUser.following || []; // This should contain usernames
 
-        // Find users who are not in the current user's friends list and exclude the current user
+        // Fetch usernames of the users that are followed by the current user
+        const followedUsernames = await User.find({
+            username: { $in: followingList },
+        }).select("username");
+
+        const followedUsernamesArray = followedUsernames.map(user => user.username); // Extract usernames
+
+        // Find users who are not in the current user's following list and exclude the current user
         const users = await User.find({
-            _id: { $nin: [...friendList, userId] }, // Exclude users in friend list and the current user
+            username: { $nin: followedUsernamesArray }, // Exclude users in following list
+            _id: { $ne: userId }, // Exclude the current user by ID
         }).select("username");
 
         return NextResponse.json(users);
