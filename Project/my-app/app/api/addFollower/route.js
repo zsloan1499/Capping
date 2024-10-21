@@ -27,26 +27,36 @@ export async function POST(req) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        console.log("Current User:", currentUser);
-
         // Ensure the `following` field is an array
         if (!currentUser.following) {
             currentUser.following = [];
         }
 
-        // Check if the user to follow already exists in the database
+        // Check if the user to follow exists in the database
         const friendUser = await User.findOne({ username: friendUsername });
         if (!friendUser) {
             return NextResponse.json({ error: "User to follow not found" }, { status: 404 });
         }
 
-        console.log("User to Follow:", friendUser);
+        // Ensure the `followers` field is an array for the user being followed
+        if (!friendUser.followers) {
+            friendUser.followers = [];
+        }
 
         // Check if the user is already in the following list
         if (!currentUser.following.includes(friendUser.username)) {
             currentUser.following.push(friendUser.username); // Store the following user's username
+
+            // Also add the current user to the friendUser's followers array
+            if (!friendUser.followers.includes(currentUser.username)) {
+                friendUser.followers.push(currentUser.username);
+            }
+
+            // Save both the current user and the friend user
             await currentUser.save();
-            console.log(`Added ${friendUser.username} to following list.`);
+            await friendUser.save();
+
+            console.log(`Added ${friendUser.username} to following list and ${currentUser.username} to ${friendUser.username}'s followers list.`);
         } else {
             console.log(`${friendUser.username} is already in the following list.`);
         }
