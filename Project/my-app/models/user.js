@@ -2,6 +2,11 @@ import mongoose, { Schema, models } from "mongoose";
 
 // Schema for a song
 const songSchema = new Schema({
+    spotifyId: {
+        type: String, // Store Spotify's song ID directly
+        required: true,
+        unique: true, // Unique ID for each song
+    },
     name: {
         type: String,
         required: true,
@@ -14,6 +19,21 @@ const songSchema = new Schema({
         type: String, // URL for the custom image
         required: false, // Optional custom image
     },
+    ratings: [
+        {
+            userId: {
+                type: Schema.Types.ObjectId,
+                ref: "User", // Reference to the user who gave the rating
+                required: true,
+            },
+            rating: {
+                type: Number,
+                min: 1,
+                max: 10,
+                required: true,
+            }
+        }
+    ],
 }, { timestamps: true });
 
 const Song = models.Song || mongoose.model("Song", songSchema);
