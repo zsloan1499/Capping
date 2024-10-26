@@ -12,6 +12,8 @@ export default function UserInfo() {
     const [showUsernameForm, setShowUsernameForm] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [profilePhoto, setProfilePhoto] = useState("");
+    const [followerCount, setFollowerCount] = useState(0);
+    const [followingCount, setFollowingCount] = useState(0);
 
     // Debugging log to check the URL
     console.log("Profile Photo URL:", profilePhoto);
@@ -24,6 +26,30 @@ export default function UserInfo() {
             exchangeCodeForToken(code);
         }
     }, []);
+
+    useEffect(() => {
+        if (session?.user?.username) {
+            // Fetch follower count
+            fetch('/api/getFollowerCount', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: session.user.username })
+            })
+                .then(res => res.json())
+                .then(data => setFollowerCount(data.followerCount || 0))
+                .catch(err => console.error("Error fetching follower count:", err));
+    
+            // Fetch following count
+            fetch('/api/getFollowingCount', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: session.user.username })
+            })
+                .then(res => res.json())
+                .then(data => setFollowingCount(data.followingCount || 0))
+                .catch(err => console.error("Error fetching following count:", err));
+        }
+    }, [session?.user?.username]);
 
     const exchangeCodeForToken = async (code) => {
         try {
@@ -283,6 +309,13 @@ export default function UserInfo() {
                             </button>
                         </form>
                         {error && <div className="text-red-500 mt-2">{error}</div>}
+                        <Link href="/dashboard">
+                            <p className = " underline m-1 text-white">Followers: {followerCount}</p>
+                        </Link>
+                        <Link href="/dashboard">
+                            <p className = " underline m-1 text-white">Following: {followingCount}</p>
+                        </Link>
+                        
                     </div>
                 </div>
 
