@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
 import Link from 'next/link';
-import { BellIcon, CogIcon } from '@heroicons/react/24/solid'; // Import Bell and Cog icons
+import { BellIcon, CogIcon } from '@heroicons/react/24/solid';
 
 export default function FriendPage() {
     const { data: session } = useSession();
-    const [users, setUsers] = useState([]);         // List of users available to follow
-    const [following, setFollowing] = useState([]); // List of users the current user is following
-    const [isNavOpen, setIsNavOpen] = useState(false); // Track nav open/close state
+    const [users, setUsers] = useState([]);
+    const [following, setFollowing] = useState([]);
+    const [isNavOpen, setIsNavOpen] = useState(false);
 
     useEffect(() => {
         if (session?.user) {
@@ -20,13 +20,13 @@ export default function FriendPage() {
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ userId: session.user.id }),  // Send the userId in the body
+                        body: JSON.stringify({ userId: session.user.id }),
                     });
-    
+
                     const result = await response.json();
-    
+
                     if (response.ok) {
-                        setUsers(result);  // Set users available to follow
+                        setUsers(result);
                     } else {
                         console.error("Error fetching users", result.error);
                     }
@@ -37,7 +37,7 @@ export default function FriendPage() {
             fetchUsers();
         }
     }, [session]);
-    
+
     const addFollowing = async (username) => {
         try {
             const response = await fetch("/api/addFollower", {
@@ -46,15 +46,15 @@ export default function FriendPage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId: session.user.id, // Send current user's ID
-                    friendUsername: username  // Send the friend's username
+                    userId: session.user.id,
+                    friendUsername: username
                 })
             });
-    
+
             const result = await response.json();
-    
+
             if (response.ok) {
-                setFollowing((prev) => [...prev, username]); // Add user to the following list in state
+                setFollowing((prev) => [...prev, username]);
             } else {
                 console.error("Error adding follower:", result.error);
             }
@@ -71,7 +71,6 @@ export default function FriendPage() {
         <div className="w-screen h-screen flex bg-customBlue">
             {/* Left Side Navigation Bar */}
             <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
-                {/* Button to open/close the navigation */}
                 <button
                     className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
                     onClick={toggleNav}
@@ -79,7 +78,6 @@ export default function FriendPage() {
                     {isNavOpen ? 'Close' : 'Open'}
                 </button>
 
-                {/* Navigation Links */}
                 {isNavOpen && (
                     <>
                         <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
@@ -99,12 +97,10 @@ export default function FriendPage() {
                     
                     {/* Icons and Profile Photo */}
                     <div className="flex items-center space-x-4">
-                        {/* Profile Photo */}
                         <Link href="/UserInfo">
                             <img src={session?.user?.profilePhoto || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"} alt="User Profile Photo" className="w-6 h-6" />
                         </Link>
 
-                        {/* Notification Bell Icon */}
                         <button className="text-white relative">
                             <BellIcon className="w-6 h-6" />
                             <span className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
@@ -112,7 +108,6 @@ export default function FriendPage() {
                             </span>
                         </button>
 
-                        {/* Settings Icon */}
                         <button className="text-white">
                             <CogIcon className="w-6 h-6" />
                         </button>
@@ -122,7 +117,12 @@ export default function FriendPage() {
                 <div className="space-y-4">
                     {users.map((user) => (
                         <div key={user.username} className="flex justify-between items-center p-4 bg-customBlue2 shadow rounded-lg">
-                            <span className = "text-white">{user.username}</span>
+                            <Link 
+                                href={`/FriendInfo?username=${user.username}`} // Pass username directly as query param
+                                className="text-white"
+                            >
+                                <span className="text-white">{user.username}</span>
+                            </Link>     
                             <button
                                 className={`px-4 py-2 rounded ${following.includes(user.username) ? "bg-green-500" : "bg-blue-500"} text-white`}
                                 onClick={() => addFollowing(user.username)}
