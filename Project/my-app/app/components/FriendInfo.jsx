@@ -2,17 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from "next-auth/react";
+import { useRouter } from 'next/router'; // Import Next.js router for navigation
 
 export default function FriendInfo() {
     const { data: session } = useSession(); // Get session data
     const [friendInfo, setFriendInfo] = useState({ username: '', profilePhoto: '' });
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true); // Track loading state
+    const [username, setUsername] = useState(null); // State to store username from URL
 
-    const username = new URLSearchParams(window.location.search).get('username'); // Extract username from URL params
+    // Fetch username only on the client-side after the component mounts
+    useEffect(() => {
+        if (typeof window !== "undefined") { // Check if running on client-side
+            const urlUsername = new URLSearchParams(window.location.search).get('username');
+            setUsername(urlUsername);
+        }
+    }, []);
 
     useEffect(() => {
-        if (username) { // Check if username is available
+        if (username) { // Ensure username is available before fetching
             const fetchFriendInfo = async () => {
                 try {
                     const response = await fetch('/api/getFriendInfo', {
