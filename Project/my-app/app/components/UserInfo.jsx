@@ -14,6 +14,11 @@ export default function UserInfo() {
     const [profilePhoto, setProfilePhoto] = useState("");
     const [followerCount, setFollowerCount] = useState(0);
     const [followingCount, setFollowingCount] = useState(0);
+    const [showFollowingBox, setShowFollowingBox] = useState(false); 
+    const [showFollowerBox, setShowFollowerBox] = useState(false); 
+    const [followers, setFollowers] = useState([]);
+    const [following, setFollowing] = useState([]);
+
 
     // Debugging log to check the URL
     console.log("Profile Photo URL:", profilePhoto);
@@ -285,6 +290,55 @@ export default function UserInfo() {
         }
     };
 
+    // Toggle follower box and fetch data if opening
+    const toggleFollowerBox = async () => {
+        if (!showFollowerBox) {
+            // Fetch followers only if the box is about to be shown
+            await fetchFollowers();
+        }
+        setShowFollowerBox(!showFollowerBox);
+    };
+
+    // Toggle following box and fetch data if opening
+    const toggleFollowingBox = async () => {
+        if (!showFollowingBox) {
+            // Fetch following only if the box is about to be shown
+            await fetchFollowing();
+        }
+        setShowFollowingBox(!showFollowingBox);
+    };
+
+            // Fetch followers from API
+    const fetchFollowers = async () => {
+        try {
+            const response = await fetch('/api/getFollowers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            const data = await response.json();
+            setFollowers(data.followers || []);
+        } catch (error) {
+            console.error("Error fetching followers:", error);
+        }
+    };
+
+    // Fetch following from API
+    const fetchFollowing = async () => {
+        try {
+            const response = await fetch('/api/getFollowing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            const data = await response.json();
+            setFollowing(data.following || []);
+        } catch (error) {
+            console.error("Error fetching following:", error);
+        }
+    };
+
+
     return (
         <div className="bg-customBlue w-screen h-screen flex justify-center items-start p-8">
             <title>Melodi</title>
@@ -309,13 +363,12 @@ export default function UserInfo() {
                             </button>
                         </form>
                         {error && <div className="text-red-500 mt-2">{error}</div>}
-                        <Link href="/dashboard">
-                            <p className = " underline m-1 text-white">Followers: {followerCount}</p>
-                        </Link>
-                        <Link href="/dashboard">
-                            <p className = " underline m-1 text-white">Following: {followingCount}</p>
-                        </Link>
-                        
+                        <button onClick={toggleFollowerBox}>
+                            <p className = " hover:underline cursor-pointer m-1 text-white">Followers: {followerCount}</p>
+                        </button>
+                        <button onClick={toggleFollowingBox}>
+                            <p className = " hover:underline cursor-pointer m-1 text-white">Following: {followingCount}</p>
+                        </button>
                     </div>
                 </div>
 
@@ -374,6 +427,43 @@ export default function UserInfo() {
                             Go to Homepage
                         </button>
                     </Link>
+            {/* Follower Pop-Up Box */}
+            {showFollowerBox && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-8 rounded-lg w-1/2">
+                        <h2 className="text-2xl font-bold mb-4">Followers</h2>
+                        <button onClick={toggleFollowerBox} className="text-red-500 mb-2">Close</button>
+                        <input type="text" placeholder="Search" className="p-2 border rounded w-full" />
+                        <ul className="mt-4">
+                            {followers.map(follower => (
+                                <li key={follower._id} className="p-2 border-b flex items-center">
+                                    <img src={follower.profilePhoto} alt="Profile" className="w-10 h-10 rounded-full mr-2" />
+                                    {follower.username}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            )}
+
+            {/* Following Pop-Up Box */}
+            {showFollowingBox && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-8 rounded-lg w-1/2">
+                        <h2 className="text-2xl font-bold mb-4">Following</h2>
+                        <button onClick={toggleFollowingBox} className="text-red-500 mb-2">Close</button>
+                        <input type="text" placeholder="Search" className="p-2 border rounded w-full" />
+                        <ul className="mt-4">
+                            {following.map(friend => (
+                                <li key={friend._id} className="p-2 border-b flex items-center">
+                                    <img src={friend.profilePhoto} alt="Profile" className="w-10 h-10 rounded-full mr-2" />
+                                    {friend.username}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            )}
                 </div>
             </div>
         </div>
