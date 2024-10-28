@@ -113,8 +113,8 @@ export default function FriendInfo() {
                         <div className="text-red-500 mt-4">{error || "Profile photo not available."}</div>
                     )}
                     <div className="mt-4">
-                        <p>Followers: {friendInfo.followerCount}</p>
-                        <p>Following: {friendInfo.followingCount}</p>
+                        <p className = "hover:underline cursor-pointer">Followers: {friendInfo.followerCount}</p>
+                        <p className = "hover:underline cursor-pointer">Following: {friendInfo.followingCount}</p>
                     </div>
                     <button
                         onClick={handleFollowToggle}

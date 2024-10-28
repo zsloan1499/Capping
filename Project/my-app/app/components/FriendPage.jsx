@@ -121,7 +121,7 @@ export default function FriendPage() {
                                 href={`/FriendInfo?username=${user.username}`} // Pass username directly as query param
                                 className="text-white"
                             >
-                                <span className="text-white">{user.username}</span>
+                                <span className="text-white hover:underline cursor-pointer">{user.username}</span>
                             </Link>     
                             <button
                                 className={`px-4 py-2 rounded ${following.includes(user.username) ? "bg-green-500" : "bg-blue-500"} text-white`}
