@@ -14,16 +14,25 @@ export async function POST(req) {
             return NextResponse.json({ error: "A valid username is required" }, { status: 400 });
         }
 
-        // Find user by username
-        const user = await User.findOne({ username }).select("username profilePhoto");
+        // Find user by username, and select relevant fields
+        const user = await User.findOne({ username }).select("username profilePhoto followers following");
 
         // Check if user exists
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        // Respond with user's profile information
-        return NextResponse.json({ username: user.username, profilePhoto: user.profilePhoto });
+        // Calculate follower and following counts if followers and following are arrays
+        const followerCount = user.followers ? user.followers.length : 0;
+        const followingCount = user.following ? user.following.length : 0;
+
+        // Respond with user's profile information and counts
+        return NextResponse.json({
+            username: user.username,
+            profilePhoto: user.profilePhoto,
+            followerCount,
+            followingCount
+        });
     } catch (error) {
         console.error("Error fetching user info:", error);
         return NextResponse.json({ error: "An error occurred while fetching user data" }, { status: 500 });
