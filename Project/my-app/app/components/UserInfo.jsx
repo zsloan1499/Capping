@@ -23,15 +23,6 @@ export default function UserInfo() {
     // Debugging log to check the URL
     console.log("Profile Photo URL:", profilePhoto);
 
-
-    // Handle Spotify access token (unchanged)
-    useEffect(() => {
-        const code = new URLSearchParams(window.location.search).get("code");
-        if (code) {
-            exchangeCodeForToken(code);
-        }
-    }, []);
-
     useEffect(() => {
         if (session?.user?.username) {
             // Fetch follower count
@@ -56,6 +47,17 @@ export default function UserInfo() {
         }
     }, [session?.user?.username]);
 
+
+    // Handle Spotify access token (unchanged)
+    useEffect(() => {
+        const code = new URLSearchParams(window.location.search).get("code");
+        //const code = "AQCf8_nBpVFoVnoeGliCNiBmAsH7nNFPjqae1pybKJ9lEWLned7gQUy2ieVZ8765d1FBynsQIsJmMQw_OSE5NeUqu2BqKvtsy4P3kQsjXjLo4Muc92MMwxALm4YYSfEzfHnRW6G1z2Kt29JcJVkQ9Hvr8UvYWWoOgvtuhiwDheByyHQHZnrUDgDExxrE2yJxQo4sjU18pZklt_IPN8Ne2kamMSKKDmO-fJ6yK7r0pfm6DEbIk0nDKlHu"; 
+        if (code) {
+            exchangeCodeForToken(code);
+        }
+    }, []);
+
+    //exchange code in url for Spotify Token 
     const exchangeCodeForToken = async (code) => {
         try {
             const response = await fetch("https://accounts.spotify.com/api/token", {
@@ -77,7 +79,8 @@ export default function UserInfo() {
 
             if (response.ok && data.access_token) {
                 console.log("Access Token:", data.access_token);
-                sessionStorage.setItem("spotifyAccessToken", data.access_token); //store spotify access token 
+                sessionStorage.setItem("spotifyAccessToken", data.access_token); //store spotify access token
+                //localStorage.setItem("spotifyAccessToken", data.access_token); //tried using localStorage 
                 await getSpotifyUserProfile(data.access_token);
             } else {
                 console.error("Error exchanging code for token:", data.error);
