@@ -1,3 +1,4 @@
+import { connectMongoDB } from "/lib/mongodb";
 import mongoose, { Schema, models } from "mongoose";
 
 // Schema for a song
@@ -19,21 +20,6 @@ const songSchema = new Schema({
         type: String, // URL for the custom image
         required: false, // Optional custom image
     },
-    ratings: [
-        {
-            userId: {
-                type: Schema.Types.ObjectId,
-                ref: "User", // Reference to the user who gave the rating
-                required: true,
-            },
-            rating: {
-                type: Number,
-                min: 1,
-                max: 10,
-                required: true,
-            }
-        }
-    ],
 }, { timestamps: true });
 
 const Song = models.Song || mongoose.model("Song", songSchema);
@@ -78,6 +64,21 @@ const reviewSchema = new Schema({
             default: Date.now,
         },
     }],
+    ratings: [
+        {
+            userId: {
+                type: Schema.Types.ObjectId,
+                ref: "User", // Reference to the user who gave the rating
+                required: true,
+            },
+            rating: {
+                type: Number,
+                min: 1,
+                max: 10,
+                required: true,
+            }
+        }
+    ],
 }, { timestamps: true });
 
 const Review = models.Review || mongoose.model("Review", reviewSchema);
