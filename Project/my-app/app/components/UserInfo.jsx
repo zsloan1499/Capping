@@ -80,7 +80,7 @@ export default function UserInfo() {
             if (response.ok && data.access_token) {
                 console.log("Access Token:", data.access_token);
                 sessionStorage.setItem("spotifyAccessToken", data.access_token); //store spotify access token
-                //localStorage.setItem("spotifyAccessToken", data.access_token); //tried using localStorage 
+                //localStorage.setItem("spotifyAccessToken1", data.access_token); //tried using localStorage 
                 await getSpotifyUserProfile(data.access_token);
             } else {
                 console.error("Error exchanging code for token:", data.error);
@@ -113,7 +113,7 @@ export default function UserInfo() {
             response_type: 'code',
             client_id: process.env.NEXT_PUBLIC_S_CLIENT_ID,
             redirect_uri: process.env.NEXT_PUBLIC_S_REDIRECT_URI,
-            scope: "user-read-email playlist-read-private user-top-read" //user-top-read = users top songs 
+            scope: "user-read-email playlist-read-private user-top-read user-read-recently-played" //user-top-read = users top songs, 
         });
         const spotifyAuthUrl = 'https://accounts.spotify.com/authorize?' + params.toString();
         window.location.href = spotifyAuthUrl;

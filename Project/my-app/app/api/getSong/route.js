@@ -6,7 +6,7 @@ export async function GET(req) {
         const accessToken = req.headers.get("authorization");
 
         // For this test, specify a hardcoded Spotify song ID (change as needed)
-        const spotifySongId = "3n3Ppam7vgaVa1iaRUc9Lp"; // Example song ID (Ed Sheeran - Shape of You)
+        const spotifySongId = "0VjIjW4GlUZAMYd2vXMi3b"; // Example song ID (Ed Sheeran - Shape of You)
 
         // Call Spotify API to get the song details
         const response = await fetch(`https://api.spotify.com/v1/tracks/${spotifySongId}`, {
