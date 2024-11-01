@@ -152,11 +152,13 @@ const userSchema = new Schema({
         required: false,
     },
     following: [{
-        type: String,
+        type: Schema.Types.ObjectId, // Changed to ObjectId
+        ref: "User", // Referencing other users
         required: false,
     }],
     followers: [{
-        type: String,
+        type: Schema.Types.ObjectId, // Changed to ObjectId
+        ref: "User", // Referencing other users
         required: false,
     }],
 

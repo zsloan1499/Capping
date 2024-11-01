@@ -60,7 +60,7 @@ export default function HomePage() {
         >
           {isNavOpen ? 'Close' : 'Open'}
         </button>
-
+  
         {/* Navigation Links */}
         {isNavOpen && (
           <>
@@ -72,20 +72,20 @@ export default function HomePage() {
           </>
         )}
       </nav>
-
+  
       {/* Main Content Area */}
-      <title>Melodi</title>
       <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>
+        <title>Melodi</title>
         <div className="flex items-center justify-between">
           <h1 className="text-white text-3xl font-bold">Melodi</h1>
-
+  
           {/* Icons and Profile Photo */}
           <div className="flex items-center space-x-4">
             {/* Profile Photo */}
             <Link href="/UserInfo">
               <img src={session?.user?.profilePhoto || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"} alt="User Profile Photo" className="w-6 h-6" />
             </Link>
-
+  
             {/* Notification Bell Icon */}
             <button className="text-white relative">
               <BellIcon className="w-6 h-6" />
@@ -93,14 +93,14 @@ export default function HomePage() {
                 {/* Optional notification content */}
               </span>
             </button>
-
+  
             {/* Settings Icon */}
             <button className="text-white">
               <CogIcon className="w-6 h-6" />
             </button>
           </div>
         </div>
-
+  
         {/* Carousel Section - Your Top Artists */}
         <div style={carouselContainerStyle} className="w-full">
           <Carousel responsive={responsive} arrows={true}>
@@ -115,7 +115,7 @@ export default function HomePage() {
             <div style={itemStyle}>Item 9</div>
           </Carousel>
         </div>
-
+  
         {/* Carousel Section - Your Playlists */}
         <div style={carouselContainerStyle} className="w-full">
           <Carousel responsive={responsive} arrows={true}>
@@ -130,8 +130,8 @@ export default function HomePage() {
             <div style={itemStyle}>Item 9</div>
           </Carousel>
         </div>
-
-        {/* Carousel Section - Friends */}
+  
+        {/* Carousel Section - Reviews */}
         <div style={carouselContainerStyle} className="w-full">
           <Carousel responsive={responsive} arrows={true}>
             <div style={itemStyle}>Item 1</div>
@@ -146,21 +146,8 @@ export default function HomePage() {
           </Carousel>
         </div>
 
-        {/* Carousel Section - Reviews*/}
-        <div style={carouselContainerStyle} className="w-full">
-          <Carousel responsive={responsive} arrows={true}>
-            <div style={itemStyle}>Item 1</div>
-            <div style={itemStyle}>Item 2</div>
-            <div style={itemStyle}>Item 3</div>
-            <div style={itemStyle}>Item 4</div>
-            <div style={itemStyle}>Item 5</div>
-            <div style={itemStyle}>Item 6</div>
-            <div style={itemStyle}>Item 7</div>
-            <div style={itemStyle}>Item 8</div>
-            <div style={itemStyle}>Item 9</div>
-          </Carousel>
-        </div>
       </div>
     </div>
   );
+  
 }

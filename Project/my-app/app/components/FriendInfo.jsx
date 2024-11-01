@@ -11,6 +11,7 @@ export default function FriendInfo() {
     const [username, setUsername] = useState(null); // State to store username from URL
     const [isFollowing, setIsFollowing] = useState(false); // Track follow status
     const [buttonLoading, setButtonLoading] = useState(false); // Track button loading state
+    const [isNavOpen, setIsNavOpen] = useState(false);
 
     useEffect(() => {
         if (typeof window !== "undefined") { // Check if running on client-side
@@ -100,8 +101,31 @@ export default function FriendInfo() {
         }
     };
 
+    const toggleNav = () => {
+        setIsNavOpen(!isNavOpen);
+      };
+
     return (
         <div className="flex flex-col items-center p-4 bg-customBlue h-screen text-white">
+            <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
+                <button
+                    className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
+                    onClick={toggleNav}
+                >
+                    {isNavOpen ? 'Close' : 'Open'}
+                </button>
+
+                {isNavOpen && (
+                    <>
+                        <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
+                        <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/Review</Link>
+                        <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
+                        <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
+                        <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
+                        <Link href="/placeholder5" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
+                    </>
+                )}
+            </nav>
             {loading ? (
                 <div className="text-red-500 mt-4">Loading...</div>
             ) : (
