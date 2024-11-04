@@ -153,8 +153,6 @@ export default function UserInfo() {
     };
 
     // Change username
-    // Change username
-    // Change username
     const changeUsername = async (e) => {
         e.preventDefault();
 

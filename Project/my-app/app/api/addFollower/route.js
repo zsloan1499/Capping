@@ -27,8 +27,8 @@ export async function POST(req) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        // Ensure the `following` field is an array
-        if (!currentUser.following) {
+        // Ensure currentUser.following is an array
+        if (!Array.isArray(currentUser.following)) {
             currentUser.following = [];
         }
 
@@ -38,18 +38,19 @@ export async function POST(req) {
             return NextResponse.json({ error: "User to follow not found" }, { status: 404 });
         }
 
-        // Ensure the `followers` field is an array for the user being followed
-        if (!friendUser.followers) {
+        // Ensure friendUser.followers is an array
+        if (!Array.isArray(friendUser.followers)) {
             friendUser.followers = [];
         }
 
         // Check if the user is already in the following list
-        if (!currentUser.following.includes(friendUser.username)) {
-            currentUser.following.push(friendUser.username); // Store the following user's username
+        if (!currentUser.following.includes(friendUser._id)) {
+            // Add friend's ObjectId to current user's following array
+            currentUser.following.push(friendUser._id);
 
-            // Also add the current user to the friendUser's followers array
-            if (!friendUser.followers.includes(currentUser.username)) {
-                friendUser.followers.push(currentUser.username);
+            // Add current user's ObjectId to friend's followers array
+            if (!friendUser.followers.includes(currentUser._id)) {
+                friendUser.followers.push(currentUser._id);
             }
 
             // Save both the current user and the friend user

@@ -20,19 +20,12 @@ export async function POST(req) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        const followingList = currentUser.following || []; // This should contain usernames
-
-        // Fetch usernames of the users that are followed by the current user
-        const followedUsernames = await User.find({
-            username: { $in: followingList },
-        }).select("username");
-
-        const followedUsernamesArray = followedUsernames.map(user => user.username); // Extract usernames
+        // Use IDs instead of usernames in the following list for more consistent MongoDB querying
+        const followingIds = currentUser.following || [];
 
         // Find users who are not in the current user's following list and exclude the current user
         const users = await User.find({
-            username: { $nin: followedUsernamesArray }, // Exclude users in following list
-            _id: { $ne: userId }, // Exclude the current user by ID
+            _id: { $nin: followingIds, $ne: userId } // Exclude users in following list and the current user
         }).select("username");
 
         return NextResponse.json(users);
