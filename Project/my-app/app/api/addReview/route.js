@@ -1,25 +1,18 @@
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "../../../lib/mongodb";
-import { Review, Song } from "../../../models/User"; // Ensure the import paths are correct
+import { Review } from "../../../models/User"; // Ensure Review is imported
 
 export async function POST(req) {
     try {
-        const { searchItem, selectedNumber, reviewText, userId } = await req.json(); // Get userId from the request
+        const { songId, selectedNumber, reviewText, userId } = await req.json(); // Ensure you're receiving songId
 
         await connectMongoDB();
         console.log("Connected to MongoDB");
 
-        // Find song by name or other identifying property
-        const song = await Song.findOne({ name: searchItem }); 
-
-        if (!song) {
-            return NextResponse.json({ message: "Song not found" }, { status: 404 });
-        }
-
-        // Create a new review object
+        // Create a new review document
         const newReview = await Review.create({
-            song: song._id, // Use the found song's ID
-            user: userId,   // Use the current user's ID from the request
+            song: { id: songId }, // Assuming you want to store the song ID only
+            user: userId, // Use the user ID instead of username
             reviewText,
             rating: selectedNumber,
         });

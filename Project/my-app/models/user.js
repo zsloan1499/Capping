@@ -130,7 +130,7 @@ const userSchema = new Schema({
     profilePhoto: {
         type: String,
         required: true,
-        default: "https: //www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vecteezy.com%2Ffree-vector%2Fdefault-profile-picture&psig=AOvVaw0T_T2Qo0Y0h-G83HyPqMuC&ust=1727825682281000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCLjlnPXq64gDFQAAAAAdAAAAABAE",
+        default: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vecteezy.com%2Ffree-vector%2Fdefault-profile-picture&psig=AOvVaw0T_T2Qo0Y0h-G83HyPqMuC&ust=1727825682281000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCLjlnPXq64gDFQAAAAAdAAAAABAE",
     },
     likedSongs: [{
         type: Schema.Types.ObjectId,

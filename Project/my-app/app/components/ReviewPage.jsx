@@ -1,4 +1,5 @@
-'use client'
+'use client';
+
 import { BellIcon, CogIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -11,21 +12,26 @@ export default function HomePage() {
   const { data: session } = useSession(); 
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState('');
-  const [searchItem, setSearchItem] = useState('');
+  const [selectedSongId, setSelectedSongId] = useState(''); // Change to store selected song ID
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
-  
+
   const charLimit = 250;
 
-  const toggleNav = () => {
-    setIsNavOpen(!isNavOpen);
-  };
+  // Step 1: Songs array with artist, name, and id
+  const songs = [
+    { id: 1, name: "Hey Jude", artist: "The Beatles" },
+    { id: 2, name: "Let It Be", artist: "The Beatles" },
+    { id: 3, name: "XO Tour Llif3", artist: "Lil Uzi Vert" },
+    { id: 4, name: "The Way Life Goes", artist: "Lil Uzi Vert" },
+  ];
 
-  const handleNumberChange = (event) => {
-    setSelectedNumber(event.target.value);
-  };
+  const toggleNav = () => setIsNavOpen(!isNavOpen);
 
-  const handleSearchChange = (event) => {
-    setSearchItem(event.target.value);
+  const handleNumberChange = (event) => setSelectedNumber(event.target.value);
+
+  const handleSongChange = (event) => {
+    const selectedSong = songs.find(song => song.name === event.target.value.split(" - ")[0]);
+    setSelectedSongId(selectedSong ? selectedSong.id : ''); // Set the selected song ID
   };
 
   const handleReviewTextChange = (newState) => {
@@ -47,11 +53,10 @@ export default function HomePage() {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    const reviewText = editorState.getCurrentContent().getPlainText(); // Get the review text
-    const userId = session?.user?.id; // Retrieve user ID from session
+    const reviewText = editorState.getCurrentContent().getPlainText();
+    const userId = session?.user?.id; // Retrieve the user ID from session
 
-    // Validate the presence of required fields
-    if (!searchItem || !selectedNumber || !reviewText || !userId) {
+    if (!selectedSongId || !selectedNumber || !reviewText || !userId) {
         console.error("All fields are required!");
         return;
     }
@@ -59,22 +64,25 @@ export default function HomePage() {
     try {
         const response = await fetch('/api/addReview', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                searchItem,
+                songId: selectedSongId, // Send the song ID instead of name and artist
                 selectedNumber,
                 reviewText,
-                userId, // Include user ID in the request
+                userId, // Pass the user ID
             }),
         });
 
         const data = await response.json();
         console.log("Submitted data:", data);
 
-        // Optionally reset the form fields after submission
-        setSearchItem('');
+        // Optionally handle success feedback for the user
+        if (data.message === "Review submitted") {
+            // Display success message or update UI accordingly
+        }
+
+        // Reset the form fields after submission
+        setSelectedSongId('');
         setSelectedNumber('');
         setEditorState(EditorState.createEmpty());
     } catch (error) {
@@ -82,15 +90,10 @@ export default function HomePage() {
     }
 };
 
-
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
-      {/* Left Side Navigation Bar */}
       <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
-        <button
-          className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
-          onClick={toggleNav}
-        >
+        <button className="bg-blue-500 text-white p-2 rounded mb-4 w-16" onClick={toggleNav}>
           {isNavOpen ? 'Close' : 'Open'}
         </button>
 
@@ -106,19 +109,16 @@ export default function HomePage() {
         )}
       </nav>
 
-      {/* Main Content Area */}
       <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>
         <title>Melodi</title>
         <div className="flex items-center justify-between">
           <h1 className="text-white text-3xl font-bold">Review a Song</h1>
-
           <div className="flex items-center space-x-4">
             <Link href="/UserInfo">
               <img src={session?.user?.profilePhoto || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"} alt="User Profile Photo" className="w-6 h-6" />
             </Link>
             <button className="text-white relative">
               <BellIcon className="w-6 h-6" />
-              <span className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center"></span>
             </button>
             <button className="text-white">
               <CogIcon className="w-6 h-6" />
@@ -127,17 +127,21 @@ export default function HomePage() {
         </div> 
         <br />
 
-        {/* Bordered Container for Inputs and Review Box */}
         <form onSubmit={handleFormSubmit} className="border border-gray-600 p-6 rounded-lg bg-gray-800 mt-6">
-          <label className="text-white">Search for a Song:</label>
-          <input 
-            id="search" 
-            type="text" 
-            value={searchItem} 
-            onChange={handleSearchChange} 
-            placeholder="Search for a Song" 
+          <label className="text-white">Select a Song:</label>
+          <select 
+            id="songSelect" 
+            value={selectedSongId ? `${songs.find(song => song.id === selectedSongId).name} - ${songs.find(song => song.id === selectedSongId).artist}` : ''} 
+            onChange={handleSongChange} 
             className="ml-2 p-2 rounded bg-gray-900 text-white border border-gray-600"
-          />
+          >
+            <option value="">Select a Song</option>
+            {songs.map((song) => (
+              <option key={song.id} value={`${song.name} - ${song.artist}`}>
+                {song.name} - {song.artist}
+              </option>
+            ))}
+          </select>
 
           <label className="text-white ml-5 mr-3">Select a Number:</label>
           <select 
@@ -151,7 +155,6 @@ export default function HomePage() {
             ))}
           </select>
 
-          {/* Review Box (Draft.js Editor) */}
           <div className="mt-6 border border-gray-700 p-4 rounded-md bg-gray-900">
             <div style={{ minHeight: "100px", color: "white" }}>
               <Editor
