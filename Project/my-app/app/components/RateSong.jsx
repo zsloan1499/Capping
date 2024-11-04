@@ -8,7 +8,7 @@ export default function RateSong({ spotifyId, userId }) {
     const [topSongs, setTopSongs] = useState([]);//top songs
     const [songs, setSongs] = useState([]);//recently listened songs 
     const [recentlyPlayed, setRecentlyPlayed] = useState([]); // Stores recently played songs
-
+    
 
     //Function to handle rating submission
     const handleRatingSubmit = async () => {

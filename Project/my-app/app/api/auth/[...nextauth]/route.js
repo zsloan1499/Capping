@@ -50,7 +50,7 @@ export const authOptions = {
             clientSecret: process.env.NEXT_PUBLIC_S_CLIENT_SECRET,
             authorization: {
                 params: {
-                    scope: "user-read-email playlist-read-private"
+                    scope: "user-read-email playlist-read-private user-top-read user-read-recently-played"
                 },
             },
         }),
@@ -78,6 +78,7 @@ export const authOptions = {
                         const fName = profile.given_name || profile.name?.split(" ")[0];
                         const lName = profile.family_name || profile.name?.split(" ")[1] || "";
                         const username = profile.email.split("@")[0];  // Use part of email for username
+                  
 
                         // Call the register API to create the user
                         const res = await fetch('../../register', {
