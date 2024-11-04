@@ -1,5 +1,4 @@
 'use client';
-
 import { BellIcon, CogIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -12,27 +11,28 @@ export default function HomePage() {
   const { data: session } = useSession(); 
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState('');
-  const [selectedSongId, setSelectedSongId] = useState(''); // Change to store selected song ID
+  const [selectedSong, setSelectedSong] = useState('');
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
 
   const charLimit = 250;
 
-  // Step 1: Songs array with artist, name, and id
+  // Step 1: Songs array with artist and name
   const songs = [
-    { id: 1, name: "Hey Jude", artist: "The Beatles" },
-    { id: 2, name: "Let It Be", artist: "The Beatles" },
-    { id: 3, name: "XO Tour Llif3", artist: "Lil Uzi Vert" },
-    { id: 4, name: "The Way Life Goes", artist: "Lil Uzi Vert" },
-  ];
+    { name: "Hey Jude", artist: "The Beatles", spotifyId: 1 },
+    { name: "Let It Be", artist: "The Beatles", spotifyId: 2 },
+    { name: "XO Tour Llif3", artist: "Lil Uzi Vert", spotifyId: 3 },
+    { name: "The Way Life Goes", artist: "Lil Uzi Vert", spotifyId: 4 },
+];
 
   const toggleNav = () => setIsNavOpen(!isNavOpen);
 
   const handleNumberChange = (event) => setSelectedNumber(event.target.value);
 
   const handleSongChange = (event) => {
-    const selectedSong = songs.find(song => song.name === event.target.value.split(" - ")[0]);
-    setSelectedSongId(selectedSong ? selectedSong.id : ''); // Set the selected song ID
-  };
+    const selectedValue = event.target.value;
+    setSelectedSong(selectedValue);
+};
+
 
   const handleReviewTextChange = (newState) => {
     const plainText = newState.getCurrentContent().getPlainText();
@@ -54,10 +54,22 @@ export default function HomePage() {
     e.preventDefault();
 
     const reviewText = editorState.getCurrentContent().getPlainText();
-    const userId = session?.user?.id; // Retrieve the user ID from session
+    const userId = session?.user?.id; // Ensure that session and session.user are not undefined
 
-    if (!selectedSongId || !selectedNumber || !reviewText || !userId) {
+    if (!selectedSong || !selectedNumber || !reviewText || !userId) {
         console.error("All fields are required!");
+        return;
+    }
+
+    // Split selectedSong into songName and artist
+    const [songName, artist] = selectedSong.split(" - ");
+
+    // Find the selected song object to get the correct Spotify ID
+    const selectedSongObj = songs.find(song => song.name === songName && song.artist === artist);
+    const spotifyId = selectedSongObj ? selectedSongObj.spotifyId : null;
+
+    if (!spotifyId) {
+        console.error("Selected song does not have a Spotify ID.");
         return;
     }
 
@@ -66,29 +78,28 @@ export default function HomePage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                songId: selectedSongId, // Send the song ID instead of name and artist
+                songName,
+                artist,
                 selectedNumber,
                 reviewText,
-                userId, // Pass the user ID
+                userId, // Pass the user ID instead of username
+                spotify: spotifyId, // Use the correct Spotify ID
             }),
         });
 
         const data = await response.json();
         console.log("Submitted data:", data);
 
-        // Optionally handle success feedback for the user
-        if (data.message === "Review submitted") {
-            // Display success message or update UI accordingly
-        }
-
-        // Reset the form fields after submission
-        setSelectedSongId('');
+        setSelectedSong('');
         setSelectedNumber('');
         setEditorState(EditorState.createEmpty());
     } catch (error) {
         console.error("Error submitting review:", error);
     }
 };
+
+
+
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
@@ -131,13 +142,13 @@ export default function HomePage() {
           <label className="text-white">Select a Song:</label>
           <select 
             id="songSelect" 
-            value={selectedSongId ? `${songs.find(song => song.id === selectedSongId).name} - ${songs.find(song => song.id === selectedSongId).artist}` : ''} 
+            value={selectedSong} 
             onChange={handleSongChange} 
             className="ml-2 p-2 rounded bg-gray-900 text-white border border-gray-600"
           >
             <option value="">Select a Song</option>
-            {songs.map((song) => (
-              <option key={song.id} value={`${song.name} - ${song.artist}`}>
+            {songs.map((song, index) => (
+              <option key={index} value={`${song.name} - ${song.artist}`}>
                 {song.name} - {song.artist}
               </option>
             ))}

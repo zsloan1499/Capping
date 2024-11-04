@@ -1,20 +1,40 @@
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "../../../lib/mongodb";
-import { Review } from "../../../models/User"; // Ensure Review is imported
+import { Review, Song } from "../../../models/User"; // Ensure both Review and Song models are imported
 
 export async function POST(req) {
     try {
-        const { songId, selectedNumber, reviewText, userId } = await req.json(); // Ensure you're receiving songId
+        const { songName, artist, selectedNumber, reviewText, userId, spotify } = await req.json();
 
         await connectMongoDB();
         console.log("Connected to MongoDB");
 
-        // Create a new review document
+        // Ensure all necessary fields are present
+        if (!songName || !artist || !selectedNumber || !reviewText) {
+            return NextResponse.json({ message: "All fields are required" }, { status: 400 });
+        }
+
+        // Step 1: Check if the song already exists in the database
+        let song = await Song.findOne({ name: songName, artist: artist });
+
+        // Step 2: If the song is not found, add a new song
+        if (!song) {
+            song = await Song.create({ name: songName, artist: artist });
+            console.log("New song added to database:", song);
+        }
+
+        // Ensure song._id is available
+        if (!song._id) {
+            throw new Error("Failed to retrieve or create song ID.");
+        }
+
+        // Step 3: Create a new review document with the song's ID
         const newReview = await Review.create({
-            song: { id: songId }, // Assuming you want to store the song ID only
-            user: userId, // Use the user ID instead of username
+            song: song._id, // Reference only the song ID
+            user: userId, // Ensure user ID is passed and valid
             reviewText,
             rating: selectedNumber,
+            spotifyId: spotify,
         });
 
         return NextResponse.json({ message: "Review submitted", review: newReview }, { status: 201 });

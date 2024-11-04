@@ -1,18 +1,27 @@
 import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
-import { User, Song, Review, Playlist } from "../../../models/User"; 
+import { User, Song, Review, Playlist } from "../../../models/User"; // Ensure models are correctly imported
 
 export async function POST(req) {
     try {
         await connectMongoDB();
         const { email } = await req.json();
 
-        // Check if email exists
+        // Check if user with provided email exists
         const existingUser = await User.findOne({ email }).select("_id");
         
         if (existingUser) {
-            // Delete the existing user
+            // Delete the user
             await User.deleteOne({ email });
+
+            // Delete all reviews associated with the user
+            await Review.deleteMany({ userId: existingUser._id });
+
+            // Delete all songs associated with the user
+            await Song.deleteMany({ userId: existingUser._id });
+
+            // Delete all playlists associated with the user
+            await Playlist.deleteMany({ userId: existingUser._id });
 
             return NextResponse.json({
                 user: true,
@@ -23,7 +32,7 @@ export async function POST(req) {
 
         return NextResponse.json({ user: false });
     } catch (error) {
-        console.log(error);
-        return NextResponse.json({ error: "An error occurred during user existence check" });
+        console.error("Error deleting user and associated data:", error);
+        return NextResponse.json({ error: "An error occurred during account deletion" }, { status: 500 });
     }
 }
