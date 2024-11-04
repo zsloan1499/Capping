@@ -5,7 +5,7 @@ import mongoose, { Schema, models } from "mongoose";
 const songSchema = new Schema({
     spotifyId: {
         type: String, // Store Spotify's song ID directly
-        required: true,
+        required: false,
         unique: true, // Unique ID for each song
     },
     name: {
