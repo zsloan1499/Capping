@@ -6,10 +6,14 @@ import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import { searchSpotify } from "../api/searchSpotify/route"; // Ensure correct path to the search program
 
 export default function HomePage() {
   const { data: session } = useSession(); 
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
 
   const itemStyle = {
     width: '100%',  // Ensure each item takes up full width of the carousel container
@@ -48,6 +52,21 @@ export default function HomePage() {
   const toggleNav = () => {
     setIsNavOpen(!isNavOpen);
   };
+
+  const handleSearch = async () => {
+    try {
+        const response = await searchSpotify(query);
+        if (response.error) {
+            setError(response.error);
+        } else {
+            setResults(response);
+            setError(null);
+        }
+    } catch (err) {
+        console.error('Search error:', err);
+        setError('An unexpected error occurred while searching.');
+    }
+};
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
@@ -101,6 +120,33 @@ export default function HomePage() {
           </div>
         </div>
   
+        <div className="mt-8">
+          <h2 className="text-white text-2xl">Spotify Search</h2>
+            <input
+              type="text"
+              placeholder="Search for a song, artist, or album..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="p-2 rounded border border-gray-300 w-full mt-2"
+            />
+            <button onClick={handleSearch} className="mt-2 bg-blue-500 text-white p-2 rounded">Search</button>
+
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+
+            {results && results.tracks && (
+              <div className="mt-4">
+                <h2 className="text-white text-xl">Search Results</h2>
+                <ul className="text-white">
+                  {results.tracks.items.map((track) => (
+                    <li key={track.id} className="mt-2">
+                      {track.name} by {track.artists.map((artist) => artist.name).join(', ')}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+        </div>
+
         {/* Carousel Section - Your Top Artists */}
         <div style={carouselContainerStyle} className="w-full">
           <Carousel responsive={responsive} arrows={true}>
