@@ -59,10 +59,10 @@ export default function RateSong({ spotifyId, userId }) {
 
                 if (response.ok) {
                     const data = await response.json();
-                    //setRecentlyPlayed(data); // Set fetched songs
-                    setRecentlyPlayed(data.items || []); // Set recently played songs
+                    setRecentlyPlayed(data); // Set fetched songs
                 } else {
-                    setMessage("Failed to fetch recently played songs");
+                    const errorData = await response.json();
+                    setMessage(`Failed to fetch recently played songs: ${errorData.error}`);
                 }
             } catch (error) {
                 console.error("Error fetching recently played songs:", error);
@@ -141,19 +141,22 @@ export default function RateSong({ spotifyId, userId }) {
             {message && <p className="mt-2 text-gray-700">{message}</p>}
 
             {/* Additional Section */}
-        <h3 className="font-bold text-lg mt-6">Recently Played Songs</h3>
-        {recentlyPlayed.length > 0 ? (
+            <h3 className="font-bold text-lg mt-6">Recently Played Songs</h3>
+            {recentlyPlayed.length > 0 ? (
             <ul>
                 {recentlyPlayed.map((track, index) => (
-                    <li key={index} className="my-2">
-                        <p><strong>Song:</strong> {track.name}</p>
-                        <p><strong>Artist:</strong> {track.artists.map(artist => artist.name).join(", ")}</p>
-                    </li>
+                <li key={index} className="my-2">
+                    <p><strong>Song:</strong> {track.track.name}</p>
+                    <p>
+                    <strong>Artist:</strong>{" "}
+                    {track.track.artists.map((artist) => artist.name).join(", ")}
+                    </p>
+                </li>
                 ))}
             </ul>
-        ) : (
+            ) : (
             <p>Loading recently played songs...</p>
-        )}
+            )}
         </div>
     );
     

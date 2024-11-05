@@ -1,10 +1,9 @@
 // api/getRecentlyPlayedSongs/route.js
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req) {
     try {
     //get access token
-    //const accessToken = sessionStorage.getItem("spotifyAccessToken"); 
     const accessToken = req.headers.get("Authorization")?.split(" ")[1]; // This retrieves the access token from the request headers sent to the backend route.
     console.log("Access Token in API:", accessToken);
 
@@ -12,20 +11,16 @@ export async function GET() {
         return NextResponse.json({ error: "Spotify access token not found" }, { status: 401 });
     }
 
-    
+    //call spotify api 
     const response = await fetch("https://api.spotify.com/v1/me/player/recently-played", {
         headers: {
             Authorization: `Bearer ${accessToken}`,
             },
         });
 
-        // Check and log the raw response body
-        const responseText = await response.text();
-        console.log("Raw response text:", responseText);
-
         if (!response.ok) {
-            const error = await response.json();
-            return NextResponse.json({ error: error.message || "Failed to fetch recently played songs" }, { status: response.status });
+            const errorData = await response.json();
+            return NextResponse.json({ error: errorData.message || "Failed to fetch recently played songs" }, { status: response.status });
         }
 
         const data = await response.json();
