@@ -1,48 +1,42 @@
-import { getSession } from "next-auth/react";
-import { MongoClient } from "mongodb";
+import { connectMongoDB } from "../../../lib/mongodb"; // Reusing MongoDB connection
+import { User } from "../../../models/User";  // Import the User model for MongoDB interactions
+import { NextResponse } from 'next/server';  // Import NextResponse for correct response handling
 
-const client = new MongoClient(process.env.MONGODB_URI);
+export async function POST(req) {  // Only pass req in the new Next.js function style
+    try {
+        const { followerId, userId } = await req.json();  // Extract followerId and userId from the request body
 
-export default async function handler(req, res) {
-    if (req.method === 'POST') {
-        const { followerId, userId } = req.body;
-
-        // Check if both followerId and userId are provided
+        // Ensure both followerId and userId are provided
         if (!followerId || !userId) {
             console.error("Invalid request data:", { followerId, userId });
-            return res.status(400).json({ error: "Invalid request data" });
+            return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
         }
 
-        try {
-            await client.connect();
-            const db = client.db("your-database-name");
-            const usersCollection = db.collection("users");
+        // Connect to MongoDB
+        await connectMongoDB();
+        console.log("Connected to MongoDB");
 
-            // Remove follower from the user's followers list
-            const updateUser = await usersCollection.updateOne(
-                { _id: userId },
-                { $pull: { followers: followerId } }
-            );
+        // Perform the update for removing the follower from the user's followers array
+        const updateUser = await User.updateOne(
+            { _id: userId },
+            { $pull: { followers: followerId } }
+        );
 
-            // Remove the user from the follower's following list
-            const updateFollower = await usersCollection.updateOne(
-                { _id: followerId },
-                { $pull: { following: userId } }
-            );
+        // Perform the update for removing the user from the follower's following array
+        const updateFollower = await User.updateOne(
+            { _id: followerId },
+            { $pull: { following: userId } }
+        );
 
-            if (updateUser.modifiedCount > 0 && updateFollower.modifiedCount > 0) {
-                return res.status(200).json({ success: true });
-            } else {
-                console.error("Failed to remove follower:", { updateUser, updateFollower });
-                return res.status(400).json({ error: "Failed to remove follower." });
-            }
-        } catch (error) {
-            console.error("Error removing follower:", error);
-            return res.status(500).json({ error: "Internal server error" });
-        } finally {
-            await client.close();
+        // Check if both updates were successful
+        if (updateUser.modifiedCount > 0 && updateFollower.modifiedCount > 0) {
+            return NextResponse.json({ success: true }, { status: 200 });
+        } else {
+            console.error("Failed to remove follower:", { updateUser, updateFollower });
+            return NextResponse.json({ error: "Failed to remove follower" }, { status: 400 });
         }
-    } else {
-        res.status(405).json({ error: "Method Not Allowed" });
+    } catch (error) {
+        console.error("Error removing follower:", error);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

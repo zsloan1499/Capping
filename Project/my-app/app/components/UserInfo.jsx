@@ -337,7 +337,7 @@ export default function UserInfo() {
             const response = await fetch('/api/getFollowing', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
+                body: JSON.stringify({ userId: session.user.id })  // Use userId instead of username
             });
             const data = await response.json();
             setFollowing(data.following || []);
@@ -382,6 +382,13 @@ export default function UserInfo() {
 
 
     const removeFollowing = async (followingId) => {
+        console.log("Attempting to remove following with ID:", followingId); // Debug log
+    
+        if (!followingId) {
+            console.error("Invalid followingId:", followingId);
+            return;
+        }
+    
         try {
             const response = await fetch('/api/removeFollowing', {
                 method: 'POST',
@@ -390,12 +397,13 @@ export default function UserInfo() {
                 },
                 body: JSON.stringify({
                     followingId: followingId,
-                    userId: session.user.id, // Make sure session.user.id is a valid MongoDB ObjectId string
+                    userId: session.user.id, // Ensure session.user.id is valid MongoDB ObjectId string
                 }),
             });
-
+    
             const result = await response.json();
-
+            console.log("Response from server:", result); // Log server response
+    
             if (response.ok) {
                 setFollowing((prevFollowing) =>
                     prevFollowing.filter((following) => following._id !== followingId)
@@ -410,7 +418,7 @@ export default function UserInfo() {
             setError("An unexpected error occurred. Please try again.");
         }
     };
-
+    
 
 
     return (
