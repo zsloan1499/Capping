@@ -8,10 +8,9 @@ export default function UserInfo() {
     const { data: session } = useSession();
     const [error, setError] = useState("");
     const [newUsername, setNewUsername] = useState("");
-    const [username, setUsername] = useState(session?.user?.username || '');
     const [showUsernameForm, setShowUsernameForm] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [profilePhoto, setProfilePhoto] = useState("");
+    //const [profilePhoto, setProfilePhoto] = useState("");
     const [followerCount, setFollowerCount] = useState(0);
     const [followingCount, setFollowingCount] = useState(0);
     const [showFollowingBox, setShowFollowingBox] = useState(false);
@@ -19,10 +18,12 @@ export default function UserInfo() {
     const [followers, setFollowers] = useState([]);
     const [following, setFollowing] = useState([]);
     const [isNavOpen, setIsNavOpen] = useState(false);
+    const [reviews, setReviews] = useState([]);
+    const [reviewCount, setReviewCount] = useState(0);
+    const [averageRating, setAverageRating] = useState(0);
 
 
-    // Debugging log to check the URL
-    console.log("Profile Photo URL:", profilePhoto);
+
 
     useEffect(() => {
         if (session?.user?.username) {
@@ -30,7 +31,7 @@ export default function UserInfo() {
             fetch('/api/getFollowerCount', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: session.user.username })
+                body: JSON.stringify({  userId: session.user.id  })
             })
                 .then(res => res.json())
                 .then(data => setFollowerCount(data.followerCount || 0))
@@ -40,7 +41,7 @@ export default function UserInfo() {
             fetch('/api/getFollowingCount', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: session.user.username })
+                body: JSON.stringify({  userId: session.user.id  })
             })
                 .then(res => res.json())
                 .then(data => setFollowingCount(data.followingCount || 0))
@@ -57,6 +58,43 @@ export default function UserInfo() {
             exchangeCodeForToken(code);
         }
     }, []);
+
+    useEffect(() => {
+        if (!session?.user?.id) {
+            // Handle case when session is undefined or session.user is not available
+            console.log("User is not logged in or session is not available");
+            return; // Exit early if no user ID available
+        }
+
+        const fetchReviews = async () => {
+            try {
+                const response = await fetch('/api/getUserReviews', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: session.user.id }), // Pass userId of session user
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    setReviews(data.reviews || []); // Set the reviews array
+                    setReviewCount(data.reviews.length); // Set the review count
+                    setAverageRating(
+                        data.reviews.length > 0
+                            ? data.reviews.reduce((sum, review) => sum + review.rating, 0) / data.reviews.length
+                            : 0
+                    ); // Calculate average rating
+                } else {
+                    setError('Failed to load reviews');
+                }
+            } catch (error) {
+                console.error("Error fetching reviews:", error);
+                setError('Error fetching reviews');
+            }
+        };
+
+        fetchReviews();
+    }, [session?.user?.id]); // Use optional chaining to ensure session and session.user are defined
 
     //exchange code in url for Spotify Token 
     const exchangeCodeForToken = async (code) => {
@@ -584,6 +622,17 @@ export default function UserInfo() {
                         </div>
                     </div>
                 )}
+                <h2>{`Reviews (${reviewCount})`}</h2>
+            <p>{`Average Rating: ${averageRating.toFixed(1)}`}</p>
+            <ul>
+                {reviews.map((review) => (
+                    <li key={review._id} className="review-item">
+                        <p><strong>{review.userId.username}</strong> rated {review.rating}/5</p>
+                        <p><em>{review.songId.name}</em> by <strong>{review.songId.artist}</strong></p>
+                        <p>{review.reviewText}</p>
+                    </li>
+                ))}
+            </ul>
 
             </div>
         </div>

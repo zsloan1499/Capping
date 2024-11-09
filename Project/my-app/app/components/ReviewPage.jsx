@@ -101,6 +101,7 @@ export default function HomePage() {
 
 
 
+
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
       <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>

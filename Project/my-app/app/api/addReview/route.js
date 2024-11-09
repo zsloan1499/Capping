@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { connectMongoDB } from "../../../lib/mongodb";
-import { Review, Song } from "../../../models/User"; // Ensure both Review and Song models are imported
+import { Review, Song, User } from "../../../models/User"; // Ensure both Review, Song, and User models are imported
+import { NextResponse } from "next/server";
 
 export async function POST(req) {
     try {
@@ -10,7 +10,7 @@ export async function POST(req) {
         console.log("Connected to MongoDB");
 
         // Ensure all necessary fields are present
-        if (!songName || !artist || !selectedNumber || !reviewText) {
+        if (!songName || !artist || !selectedNumber || !reviewText || !userId) {
             return NextResponse.json({ message: "All fields are required" }, { status: 400 });
         }
 
@@ -36,6 +36,19 @@ export async function POST(req) {
             rating: selectedNumber,
             spotifyId: spotify,
         });
+
+        // Step 4: Add the new review ID to the user's reviews array
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error("User not found.");
+        }
+
+        // Push the new review ID to the user's review array
+        user.reviews.push(newReview._id);
+
+        // Save the updated user document
+        await user.save();
+        console.log("Review ID added to user:", user);
 
         return NextResponse.json({ message: "Review submitted", review: newReview }, { status: 201 });
     } catch (error) {

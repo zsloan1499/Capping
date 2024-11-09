@@ -6,15 +6,15 @@ export async function POST(req) {
     try {
         await connectMongoDB();
 
-        const { username } = await req.json();
+        const { userId } = await req.json();  // Expecting userId in the request body
 
-        // Validate username
-        if (!username) {
-            return NextResponse.json({ error: "A valid username is required" }, { status: 400 });
+        // Validate userId
+        if (!userId) {
+            return NextResponse.json({ error: "A valid userId is required" }, { status: 400 });
         }
 
-        // Count users who have the specified user in their 'following' list
-        const followerCount = await User.countDocuments({ following: username });
+        // Count users who have the specified userId in their 'following' list
+        const followerCount = await User.countDocuments({ following: userId });
 
         return NextResponse.json({ followerCount });
     } catch (error) {

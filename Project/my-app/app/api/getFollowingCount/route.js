@@ -6,15 +6,15 @@ export async function POST(req) {
     try {
         await connectMongoDB();
 
-        const { username } = await req.json();
+        const { userId } = await req.json();  // Expecting userId in the request body
 
-        // Validate username
-        if (!username) {
-            return NextResponse.json({ error: "A valid username is required" }, { status: 400 });
+        // Validate userId
+        if (!userId) {
+            return NextResponse.json({ error: "A valid userId is required" }, { status: 400 });
         }
 
-        // Find user by username
-        const user = await User.findOne({ username });
+        // Find user by userId
+        const user = await User.findById(userId);  // Using userId instead of username
 
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
