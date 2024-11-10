@@ -457,25 +457,25 @@ export default function UserInfo() {
     return (
         <div className="bg-customBlue w-screen h-screen flex overflow-y-auto">
             {/* Navigation on the left side */}
-            <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full min-h-screen p-4 flex flex-col space-y-4 transition-width duration-300`}>
-                <button
-                    className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
-                    onClick={toggleNav}
-                >
-                    {isNavOpen ? 'Close' : 'Open'}
-                </button>
-    
-                {isNavOpen && (
-                    <>
-                        <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
-                        <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/Review</Link>
-                        <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
-                        <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
-                        <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
-                        <Link href="/placeholder5" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
-                    </>
-                )}
-            </nav>
+            <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-auto p-4 flex flex-col space-y-4 transition-width duration-300`}>
+        <button
+            className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
+            onClick={toggleNav}
+        >
+            {isNavOpen ? 'Close' : 'Open'}
+        </button>
+
+        {isNavOpen && (
+            <>
+                <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
+                <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/Review</Link>
+                <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
+                <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
+                <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
+                <Link href="/placeholder5" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
+            </>
+        )}
+    </nav>
     
             <div className="flex flex-col w-full">
                 <title>Melodi</title>
@@ -624,6 +624,7 @@ export default function UserInfo() {
                     <div className="space-y-8">
                         {reviews.map((review) => (
                             <div key={review._id} className="bg-opacity-50 bg-gray-800 text-white p-6 rounded-lg">
+
     
                                 {/* Review Header */}
                                 <div className="flex justify-between items-start mb-2">
