@@ -61,9 +61,8 @@ export default function UserInfo() {
 
     useEffect(() => {
         if (!session?.user?.id) {
-            // Handle case when session is undefined or session.user is not available
             console.log("User is not logged in or session is not available");
-            return; // Exit early if no user ID available
+            return;
         }
 
         const fetchReviews = async () => {
@@ -71,19 +70,15 @@ export default function UserInfo() {
                 const response = await fetch('/api/getUserReviews', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: session.user.id }), // Pass userId of session user
+                    body: JSON.stringify({ userId: session.user.id }),
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    setReviews(data.reviews || []); // Set the reviews array
-                    setReviewCount(data.reviews.length); // Set the review count
-                    setAverageRating(
-                        data.reviews.length > 0
-                            ? data.reviews.reduce((sum, review) => sum + review.rating, 0) / data.reviews.length
-                            : 0
-                    ); // Calculate average rating
+                    setReviews(data.reviews || []);
+                    setReviewCount(data.reviewCount || 0);
+                    setAverageRating(data.averageRating || 0);
                 } else {
                     setError('Failed to load reviews');
                 }
@@ -94,7 +89,7 @@ export default function UserInfo() {
         };
 
         fetchReviews();
-    }, [session?.user?.id]); // Use optional chaining to ensure session and session.user are defined
+    }, [session?.user?.id]);
 
     //exchange code in url for Spotify Token 
     const exchangeCodeForToken = async (code) => {
@@ -460,16 +455,16 @@ export default function UserInfo() {
 
 
     return (
-        <div className="bg-customBlue w-screen h-screen flex">
+        <div className="bg-customBlue w-screen h-screen flex overflow-y-auto">
             {/* Navigation on the left side */}
-            <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
+            <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full min-h-screen p-4 flex flex-col space-y-4 transition-width duration-300`}>
                 <button
                     className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
                     onClick={toggleNav}
                 >
                     {isNavOpen ? 'Close' : 'Open'}
                 </button>
-
+    
                 {isNavOpen && (
                     <>
                         <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
@@ -481,10 +476,10 @@ export default function UserInfo() {
                     </>
                 )}
             </nav>
-
+    
             <div className="flex flex-col w-full">
                 <title>Melodi</title>
-
+    
                 <div className="flex">
                     {/* Profile Photo and Important Details Box */}
                     <div className="w-1/4">
@@ -514,7 +509,7 @@ export default function UserInfo() {
                             </button>
                         </div>
                     </div>
-
+    
                     {/* User Info Section */}
                     <div className="w-3/4 bg-customBlue border-5 border-gray-500 p-8 rounded-lg ml-8">
                         <div className="text-white text-xl mb-4">User Info</div>
@@ -547,24 +542,24 @@ export default function UserInfo() {
                             </form>
                         )}
                         {error && <div className="text-red-500 mt-2">{error}</div>}
-
+    
                         <div className="text-white text-lg m-2">
                             Password: <span className="font-bold">••••••</span>
                         </div>
-
+    
                         <button onClick={() => signOut({ callbackUrl: '/' })} className="bg-red-600 text-white p-2 rounded m-2">
                             Log Out
                         </button>
-
+    
                         <button onClick={deleteAccount} className="bg-red-600 text-white p-2 rounded m-2">
                             Delete Account
                         </button>
-
+    
                         {/* Spotify Login Button */}
                         <button onClick={handleSpotifyLogin} className="bg-green-600 text-white w-full p-2 rounded m-2">
                             Login with Spotify
                         </button>
-
+    
                         <Link href="/dashboard">
                             <button className="bg-blue-500 text-white p-2 rounded m-2">
                                 Go to Homepage
@@ -572,7 +567,7 @@ export default function UserInfo() {
                         </Link>
                     </div>
                 </div>
-
+    
                 {/* Follower Pop-Up Box */}
                 {showFollowerBox && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -597,7 +592,7 @@ export default function UserInfo() {
                         </div>
                     </div>
                 )}
-
+    
                 {/* Following Pop-Up Box */}
                 {showFollowingBox && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -622,20 +617,34 @@ export default function UserInfo() {
                         </div>
                     </div>
                 )}
-                <h2>{`Reviews (${reviewCount})`}</h2>
-            <p>{`Average Rating: ${averageRating.toFixed(1)}`}</p>
-            <ul>
-                {reviews.map((review) => (
-                    <li key={review._id} className="review-item">
-                        <p><strong>{review.userId.username}</strong> rated {review.rating}/5</p>
-                        <p><em>{review.songId.name}</em> by <strong>{review.songId.artist}</strong></p>
-                        <p>{review.reviewText}</p>
-                    </li>
-                ))}
-            </ul>
-
+    
+                {/* Reviews Section */}
+                <div className="mt-8 px-8 w-full">
+                    <h2 className="text-2xl text-white mb-6">{`Reviews (${reviewCount})`}</h2>
+                    <div className="space-y-8">
+                        {reviews.map((review) => (
+                            <div key={review._id} className="bg-opacity-50 bg-gray-800 text-white p-6 rounded-lg">
+    
+                                {/* Review Header */}
+                                <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                        <p className="text-lg font-semibold">{review.username}</p>
+                                        <p className="text-md italic">{review.songName} by <span className="font-bold">{review.songArtist}</span></p>
+                                    </div>
+                                    <p className="text-lg font-semibold text-right">Rating: {review.rating}</p>
+                                </div>
+    
+                                {/* Review Text */}
+                                <p className="text-lg mt-4">{review.reviewText}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+    
+                {/* Error Display */}
+                {error && <p className="text-red-500 mt-4">{error}</p>}
             </div>
         </div>
-
     );
+    
 }

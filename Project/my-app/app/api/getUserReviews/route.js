@@ -14,10 +14,11 @@ export async function POST(req) {
             return NextResponse.json({ error: "A valid userId is required" }, { status: 400 });
         }
 
-        // Find the user's reviews by their userId and populate related song data
+        // Find the user's reviews by their userId and populate related song and user data
         const reviews = await Review.find({ user: userId })
             .populate('song', 'name artist')  // Populate the song data (name, artist)
-            .select('reviewText rating song'); // Only select review text, rating, and song data
+            .populate('user', 'username')  // Populate user data (username)
+            .select('reviewText rating song user'); // Only select relevant data
 
         // If no reviews are found, return an error
         if (!reviews || reviews.length === 0) {
@@ -30,13 +31,16 @@ export async function POST(req) {
             rating: review.rating,
             songName: review.song.name,
             songArtist: review.song.artist,
+            username: review.user.username,  // Include username
         }));
 
-        // Return the reviews and the count
+        // Return the reviews, count, and average rating
         return NextResponse.json({
             reviews: formattedReviews,
             reviewCount: reviews.length,
-            averageRating: reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0,
+            averageRating: reviews.length > 0 
+                ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+                : 0,
         });
     } catch (error) {
         console.error("Error fetching reviews:", error);
