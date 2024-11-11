@@ -1,0 +1,10 @@
+next react-dom
+@heroicons/react
+@fortawesome/fontawesome-free
+aws-sdk multer
+next-connect
+@aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+react-multi-carousel
+axios
+draft-js
+@react-oauth/google@latest
