@@ -71,26 +71,25 @@ export default function HomePage() {
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
       {/* Left Side Navigation Bar */}
-      <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
-        {/* Button to open/close the navigation */}
+      <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-auto p-4 flex flex-col space-y-4 transition-width duration-300`}>
         <button
-          className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
-          onClick={toggleNav}
+            className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
+            onClick={toggleNav}
         >
-          {isNavOpen ? 'Close' : 'Open'}
+            {isNavOpen ? 'Close' : 'Open'}
         </button>
-  
-        {/* Navigation Links */}
+
         {isNavOpen && (
-          <>
-            <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/Review</Link>
-            <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
-            <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
-            <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
-            <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
-          </>
+            <>
+                <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
+                <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/Review</Link>
+                <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
+                <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
+                <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
+                <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
+            </>
         )}
-      </nav>
+    </nav>
   
       {/* Main Content Area */}
       <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>

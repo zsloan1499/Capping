@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSession } from "next-auth/react";
 
@@ -107,30 +108,30 @@ export default function FriendInfo() {
 
     return (
         <div className="flex flex-col items-center p-4 bg-customBlue h-screen text-white">
-            <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
-                <button
-                    className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
-                    onClick={toggleNav}
-                >
-                    {isNavOpen ? 'Close' : 'Open'}
-                </button>
+            <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-auto p-4 flex flex-col space-y-4 transition-width duration-300`}>
+        <button
+            className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
+            onClick={toggleNav}
+        >
+            {isNavOpen ? 'Close' : 'Open'}
+        </button>
 
-                {isNavOpen && (
-                    <>
-                        <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
-                        <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/Review</Link>
-                        <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
-                        <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
-                        <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
-                        <Link href="/placeholder5" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
-                    </>
-                )}
-            </nav>
+        {isNavOpen && (
+            <>
+                <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
+                <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/Review</Link>
+                <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
+                <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
+                <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
+                <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
+            </>
+        )}
+    </nav>
             {loading ? (
                 <div className="text-red-500 mt-4">Loading...</div>
             ) : (
                 <>
-                    <h1 className="text-2xl font-bold">{friendInfo.username}</h1>
+                    <h1 className="text-2xl font-bold items-center">{friendInfo.username}</h1>
                     {friendInfo.profilePhoto ? (
                         <img src={friendInfo.profilePhoto} alt={`${friendInfo.username}'s Profile Photo`} className="w-48 h-48 rounded-full mt-4" />
                     ) : (
