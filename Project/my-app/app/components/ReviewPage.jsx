@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import "react-multi-carousel/lib/styles.css";
 import { Editor, EditorState, RichUtils } from "draft-js";
 import "draft-js/dist/Draft.css";
+import { searchSpotify } from "../api/searchSpotify/route"; 
 
 export default function HomePage() {
   const { data: session } = useSession(); 
@@ -13,6 +14,9 @@ export default function HomePage() {
   const [selectedNumber, setSelectedNumber] = useState('');
   const [selectedSong, setSelectedSong] = useState('');
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
 
   const charLimit = 250;
 
@@ -31,6 +35,21 @@ export default function HomePage() {
   const handleSongChange = (event) => {
     const selectedValue = event.target.value;
     setSelectedSong(selectedValue);
+};
+
+  const handleSearch = async () => {
+    try {
+        const response = await searchSpotify(query);
+        if (response.error) {
+            setError(response.error);
+        } else {
+            setResults(response);
+            setError(null);
+        }
+    } catch (err) {
+        console.error('Search error:', err);
+        setError('An unexpected error occurred while searching.');
+    }
 };
 
 
@@ -138,6 +157,33 @@ export default function HomePage() {
           </div>
         </div> 
         <br />
+
+        <div className="mt-8">
+          <h2 className="text-white text-2xl">Spotify Search</h2>
+            <input
+              type="text"
+              placeholder="Search for a song, artist, or album..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="p-2 rounded border border-gray-300 w-full mt-2"
+            />
+            <button onClick={handleSearch} className="mt-2 bg-blue-500 text-white p-2 rounded">Search</button>
+
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+
+            {results && results.tracks && (
+              <div className="mt-4">
+                <h2 className="text-white text-xl">Search Results</h2>
+                <ul className="text-white">
+                  {results.tracks.items.map((track) => (
+                    <li key={track.id} className="mt-2">
+                      {track.name} by {track.artists.map((artist) => artist.name).join(', ')}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+        </div>
 
         <form onSubmit={handleFormSubmit} className="border border-gray-600 p-6 rounded-lg bg-gray-800 mt-6">
           <label className="text-white">Select a Song:</label>

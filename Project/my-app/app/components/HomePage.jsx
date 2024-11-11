@@ -66,7 +66,7 @@ export default function HomePage() {
         console.error('Search error:', err);
         setError('An unexpected error occurred while searching.');
     }
-};
+  };
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
