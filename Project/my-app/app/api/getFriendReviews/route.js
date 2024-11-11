@@ -1,5 +1,5 @@
 import { connectMongoDB } from "../../../lib/mongodb";
-import { User, Review, Song } from "/models/User";
+import { User, Review, Song } from "/models/User"; // Ensure the Song model has title and artist
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -7,7 +7,11 @@ export async function POST(req) {
     const { userId } = await req.json();
 
     try {
-        const reviews = await Review.find({ userId }); // Find reviews for this user
+        // Populate the song reference in each review
+        const reviews = await Review.find({ userId })
+            .populate('song', 'title artist') // 'song' is the reference field in Review, and 'title artist' are the fields you want to populate
+            .populate('user', 'username'); // Optionally, populate the user reference if needed
+        
         return NextResponse.json({ reviews });
     } catch (error) {
         console.error("Error fetching user reviews:", error);

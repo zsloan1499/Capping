@@ -25,35 +25,36 @@ export default function FriendInfo() {
 
     // Fetch friend information
     useEffect(() => {
-        if (username) {
-            const fetchFriendInfo = async () => {
-                try {
-                    const response = await fetch('/api/getFriendInfo', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username })
+    if (username) {
+        const fetchFriendInfo = async () => {
+            try {
+                const response = await fetch('/api/getFriendInfo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setFriendInfo({
+                        username: data.username,
+                        profilePhoto: data.profilePhoto,
+                        followerCount: data.followerCount,
+                        followingCount: data.followingCount
                     });
-                    const data = await response.json();
-                    if (response.ok) {
-                        setFriendInfo({
-                            username: data.username,
-                            profilePhoto: data.profilePhoto,
-                            followerCount: data.followerCount,
-                            followingCount: data.followingCount
-                        });
-                    } else {
-                        setError(data.error || "An error occurred");
-                    }
-                } catch (err) {
-                    console.error("Error fetching friend info:", err);
-                    setError("An unexpected error occurred.");
-                } finally {
-                    setLoading(false);
+                    setReviews(data.reviewIds || []); // Set review IDs if available
+                } else {
+                    setError(data.error || "An error occurred");
                 }
-            };
-            fetchFriendInfo();
-        }
-    }, [username]);
+            } catch (err) {
+                console.error("Error fetching friend info:", err);
+                setError("An unexpected error occurred.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchFriendInfo();
+    }
+}, [username]);
 
     // Fetch reviews for the friend
     useEffect(() => {
@@ -146,7 +147,7 @@ export default function FriendInfo() {
                 >
                     {isNavOpen ? 'Close' : 'Open'}
                 </button>
-
+    
                 {isNavOpen && (
                     <>
                         <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded w-full">Home</Link>
@@ -158,9 +159,10 @@ export default function FriendInfo() {
                     </>
                 )}
             </nav>
-
+    
             {/* Main Content */}
-            <div className="flex-1 flex flex-col items-center p-4 bg-customBlue text-white">
+            <div className="flex-1 flex flex-col items-center p-4 bg-customBlue text-white min-h-screen overflow-y-auto">
+
                 {loading ? (
                     <div className="text-red-500 mt-4">Loading...</div>
                 ) : (
@@ -182,21 +184,33 @@ export default function FriendInfo() {
                         >
                             {buttonLoading ? 'Loading...' : isFollowing ? 'Unfollow' : 'Follow'}
                         </button>
-
+    
                         {/* Display User Reviews */}
-                        <h2 className="text-xl font-bold mt-8">User Reviews</h2>
-                        <div className="space-y-4 mt-4">
+                        <div className="mt-8 px-8 w-full">
+                            <h2 className="text-2xl text-white mb-6">{`Reviews (${reviews.length})`}</h2>
+                            <div className="space-y-8">
                             {reviews.length > 0 ? (
-                                reviews.map((review) => (
-                                    <div key={review._id} className="bg-customBlue2 p-4 rounded-lg shadow">
-                                        <h3 className="text-white font-semibold">{review.songTitle}</h3>
-                                        <p className="text-gray-300">{review.reviewText}</p>
-                                        <p className="text-gray-400 text-sm">Rating: {review.rating}/10</p>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-gray-300">No reviews available for this user.</p>
-                            )}
+    reviews.map((review) => (
+        <div key={review._id} className="bg-opacity-50 bg-gray-800 text-white p-6 rounded-lg">
+            {/* Review Header */}
+            <div className="flex justify-between items-start mb-2">
+                <div>
+                    <p className="text-lg font-semibold">{review.user ? review.user.username : 'Unknown User'}</p>
+                    <p className="text-md italic">
+                        {review.song ? `${review.song.title} by ${review.song.artist}` : 'Song details missing'}
+                    </p>
+                </div>
+                <p className="text-lg font-semibold text-right">Rating: {review.rating}/10</p>
+            </div>
+
+            {/* Review Text */}
+            <p className="text-lg mt-4">{review.reviewText || 'No review text provided'}</p>
+        </div>
+    ))
+) : (
+    <p className="text-gray-300">No reviews available for this user.</p>
+)}
+                            </div>
                         </div>
                     </>
                 )}

@@ -1,5 +1,5 @@
 import { connectMongoDB } from "../../../lib/mongodb";
-import { User } from "../../../models/User";
+import { User, Review } from "../../../models/User"; // Assuming Review model exists
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -26,12 +26,16 @@ export async function POST(req) {
         const followerCount = user.followers ? user.followers.length : 0;
         const followingCount = user.following ? user.following.length : 0;
 
-        // Respond with user's profile information and counts
+        // Fetch reviews by the user's userId and only return review IDs
+        const reviews = await Review.find({ userId: user._id }).select('_id');
+
+        // Respond with user's profile information, counts, and review IDs
         return NextResponse.json({
             username: user.username,
             profilePhoto: user.profilePhoto,
             followerCount,
-            followingCount
+            followingCount,
+            reviewIds: reviews.map(review => review._id) // Include review IDs
         });
     } catch (error) {
         console.error("Error fetching user info:", error);
