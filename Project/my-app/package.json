@@ -17,7 +17,6 @@
     "@prisma/client": "^5.20.0",
     "@react-oauth/google": "^0.12.1",
     "aws-sdk": "^2.1691.0",
-    "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
     "draft-js": "^0.11.7",
     "mongoose": "^8.6.1",

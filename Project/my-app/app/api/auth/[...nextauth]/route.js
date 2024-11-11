@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth/next';
 import CredentialsProvider from "next-auth/providers/credentials";
-import { User } from "../../../../models/User"; // Adjust the path if necessary
+import { User } from "../../../../models/User"; 
 import { connectMongoDB } from "../../../../lib/mongodb";
 import bcrypt from "bcryptjs";
 import SpotifyProvider from "next-auth/providers/spotify";
