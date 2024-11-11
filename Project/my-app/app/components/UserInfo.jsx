@@ -347,20 +347,21 @@ export default function UserInfo() {
     // Fetch followers from API
     const fetchFollowers = async () => {
         try {
-            console.log("Fetching followers for:", session.user.username);
+            console.log("Fetching followers for:", session.user.id); // Log userId instead of username
             const response = await fetch('/api/getFollowers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: session.user.username })
+                body: JSON.stringify({ userId: session.user.id }) // Send userId in request body
             });
-
+    
             const data = await response.json();
-            console.log("Fetched followers:", data.followers); // Log the followers data
+            console.log("Fetched followers:", data.followers); // Log followers array
             setFollowers(data.followers || []); // Set followers in state
         } catch (error) {
             console.error("Error fetching followers:", error);
         }
     };
+    
 
 
 
@@ -570,53 +571,64 @@ export default function UserInfo() {
     
                 {/* Follower Pop-Up Box */}
                 {showFollowerBox && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                        <div className="bg-white p-8 rounded-lg w-1/2">
-                            <h2 className="text-2xl font-bold mb-4">Followers</h2>
-                            <button onClick={toggleFollowerBox} className="text-red-500 mb-2">Close</button>
-                            <input type="text" placeholder="Search" className="p-2 border rounded w-full" />
-                            <ul className="mt-4">
-                                {followers.map(follower => (
-                                    <li key={follower._id} className="p-2 border-b flex items-center">
-                                        <img src={follower.profilePhoto} alt="Profile" className="w-10 h-10 rounded-full mr-2" />
-                                        <p className="text-lg">{follower.username}</p>
-                                        <button
-                                            onClick={() => removeFollower(follower._id)} // Remove follower when clicked
-                                            className="ml-auto bg-red-500 text-white p-1 rounded"
-                                        >
-                                            Remove
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                )}
-    
-                {/* Following Pop-Up Box */}
-                {showFollowingBox && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                        <div className="bg-white p-8 rounded-lg w-1/2">
-                            <h2 className="text-2xl font-bold mb-4">Following</h2>
-                            <button onClick={toggleFollowingBox} className="text-red-500 mb-2">Close</button>
-                            <input type="text" placeholder="Search" className="p-2 border rounded w-full" />
-                            <ul className="mt-4">
-                                {following.map(friend => (
-                                    <li key={friend._id} className="p-2 border-b flex items-center">
-                                        <img src={friend.profilePhoto} alt="Profile" className="w-10 h-10 rounded-full mr-2" />
-                                        {friend.username}
-                                        <button
-                                            onClick={() => removeFollowing(friend._id)} // Remove following when clicked
-                                            className="ml-auto bg-red-500 text-white p-1 rounded"
-                                        >
-                                            Remove
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                )}
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white p-8 rounded-lg w-1/2">
+            <h2 className="text-2xl font-bold mb-4">Followers</h2>
+            <button onClick={toggleFollowerBox} className="text-red-500 mb-2">Close</button>
+            <input type="text" placeholder="Search" className="p-2 border rounded w-full" />
+            <ul className="mt-4">
+                {followers.map(follower => (
+                    <li key={follower._id} className="p-2 border-b flex items-center">
+                        <img src={follower.profilePhoto} alt="Profile" className="w-10 h-10 rounded-full mr-2" />
+                        <Link 
+                            href={`/FriendInfo?username=${follower.username}`} 
+                            className=" hover:underline"
+                        >
+                            <span>{follower.username}</span>
+                        </Link>
+                        <button
+                            onClick={() => removeFollower(follower._id)} 
+                            className="ml-auto bg-red-500 text-white p-1 rounded"
+                        >
+                            Remove
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    </div>
+)}
+
+{/* Following Pop-Up Box */}
+{showFollowingBox && (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white p-8 rounded-lg w-1/2">
+            <h2 className="text-2xl font-bold mb-4">Following</h2>
+            <button onClick={toggleFollowingBox} className="text-red-500 mb-2">Close</button>
+            <input type="text" placeholder="Search" className="p-2 border rounded w-full" />
+            <ul className="mt-4">
+                {following.map(friend => (
+                    <li key={friend._id} className="p-2 border-b flex items-center">
+                        <img src={friend.profilePhoto} alt="Profile" className="w-10 h-10 rounded-full mr-2" />
+                        <Link 
+                            href={`/FriendInfo?username=${friend.username}`} // Link to FriendInfo with username
+                            className=" hover:underline"
+                        >
+                            <span>{friend.username}</span>
+                        </Link>
+                        <button
+                            onClick={() => removeFollowing(friend._id)} // Remove following when clicked
+                            className="ml-auto bg-red-500 text-white p-1 rounded"
+                        >
+                            Remove
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    </div>
+)}
+
     
                 {/* Reviews Section */}
                 <div className="mt-8 px-8 w-full">

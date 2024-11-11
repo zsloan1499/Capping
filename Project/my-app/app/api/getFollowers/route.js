@@ -5,20 +5,20 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
     try {
         await connectMongoDB();
-        const { username } = await req.json();
+        const { userId } = await req.json(); // Get userId from request body
 
-        // Get the user and populate the followers with their username and profilePhoto
-        const user = await User.findOne({ username }).populate("followers", "username profilePhoto");
+        const user = await User.findById(userId).populate("followers", "username profilePhoto");
 
         if (!user) {
-            // If no user found, return an empty followers list
-            return NextResponse.json({ followers: [] });
+            console.error("User not found:", userId);
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        // Return followers (should contain username and profilePhoto)
-        return NextResponse.json({ followers: user.followers || [] });
+        const followers = user.followers || []; // Retrieve followers list
+
+        return NextResponse.json({ followers }); // Return followers with username and profilePhoto
     } catch (error) {
         console.error("Error fetching followers:", error);
-        return NextResponse.json({ error: "Failed to fetch followers" });
+        return NextResponse.json({ error: "Failed to fetch followers" }, { status: 500 });
     }
 }
