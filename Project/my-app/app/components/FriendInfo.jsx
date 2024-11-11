@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 export default function FriendInfo() {
     const { data: session } = useSession();
     const [friendInfo, setFriendInfo] = useState({ username: '', profilePhoto: '', followerCount: 0, followingCount: 0 });
+    const [reviews, setReviews] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [username, setUsername] = useState(null);
@@ -14,6 +15,7 @@ export default function FriendInfo() {
     const [buttonLoading, setButtonLoading] = useState(false);
     const [isNavOpen, setIsNavOpen] = useState(false);
 
+    // Retrieve the username from URL parameters
     useEffect(() => {
         if (typeof window !== "undefined") {
             const urlUsername = new URLSearchParams(window.location.search).get('username');
@@ -21,6 +23,7 @@ export default function FriendInfo() {
         }
     }, []);
 
+    // Fetch friend information
     useEffect(() => {
         if (username) {
             const fetchFriendInfo = async () => {
@@ -52,6 +55,32 @@ export default function FriendInfo() {
         }
     }, [username]);
 
+    // Fetch reviews for the friend
+    useEffect(() => {
+        if (username) {
+            const fetchFriendReviews = async () => {
+                try {
+                    const response = await fetch('/api/getFriendReviews', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        setReviews(data.reviews || []);
+                    } else {
+                        setError(data.error || "Could not fetch reviews.");
+                    }
+                } catch (err) {
+                    console.error("Error fetching reviews:", err);
+                    setError("An unexpected error occurred.");
+                }
+            };
+            fetchFriendReviews();
+        }
+    }, [username]);
+
+    // Check if the session user is following the friend
     useEffect(() => {
         if (session && username) {
             const checkIfFollowing = async () => {
@@ -76,6 +105,7 @@ export default function FriendInfo() {
         }
     }, [session, username]);
 
+    // Toggle follow/unfollow
     const handleFollowToggle = async () => {
         setButtonLoading(true);
         try {
@@ -152,6 +182,22 @@ export default function FriendInfo() {
                         >
                             {buttonLoading ? 'Loading...' : isFollowing ? 'Unfollow' : 'Follow'}
                         </button>
+
+                        {/* Display User Reviews */}
+                        <h2 className="text-xl font-bold mt-8">User Reviews</h2>
+                        <div className="space-y-4 mt-4">
+                            {reviews.length > 0 ? (
+                                reviews.map((review) => (
+                                    <div key={review._id} className="bg-customBlue2 p-4 rounded-lg shadow">
+                                        <h3 className="text-white font-semibold">{review.songTitle}</h3>
+                                        <p className="text-gray-300">{review.reviewText}</p>
+                                        <p className="text-gray-400 text-sm">Rating: {review.rating}/10</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-gray-300">No reviews available for this user.</p>
+                            )}
+                        </div>
                     </>
                 )}
             </div>
