@@ -20,7 +20,43 @@ export default function UserInfo() {
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [reviews, setReviews] = useState([]);
     const [reviewCount, setReviewCount] = useState(0);
-    const [averageRating, setAverageRating] = useState(0);
+    const [username, setUsername] = useState('');
+    const [loading, setLoading] = useState(true); // To handle loading state
+
+    // Get the username from session on mount
+    useEffect(() => {
+        const fetchUsername = async () => {
+            if (session?.user?.id) {
+                try {
+                    const response = await fetch('/api/getUsername', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ userId: session.user.id }), // Pass the user ID
+                    });
+
+                    const data = await response.json();
+
+                    if (data.username) {
+                        setUsername(data.username); // Set the username from the database
+                    } else {
+                        setUsername('No username found');
+                    }
+                } catch (error) {
+                    console.error("Error fetching username:", error);
+                    setUsername('Error fetching username');
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+
+        // Only call the fetch function if session is available
+        if (session) {
+            fetchUsername();
+        }
+    }, [session]); // Runs when the session changes
 
 
 
@@ -84,7 +120,7 @@ export default function UserInfo() {
                 }
             } catch (error) {
                 console.error("Error fetching reviews:", error);
-                setError('Error fetching reviews');
+                //setError('Error fetching reviews');
             }
         };
 
@@ -188,13 +224,13 @@ export default function UserInfo() {
     // Change username
     const changeUsername = async (e) => {
         e.preventDefault();
-
+    
         // Check for empty username
         if (!newUsername.trim()) {
             setError("Username is required.");
             return;
         }
-
+    
         try {
             const response = await fetch('/api/changeUsername', {
                 method: 'POST',
@@ -203,9 +239,9 @@ export default function UserInfo() {
                 },
                 body: JSON.stringify({ username: newUsername, userId: session.user.id }),
             });
-
+    
             const result = await response.json();
-
+    
             // Handle username existence and success response
             if (result.usernameExists) {
                 setError("Username already exists.");
@@ -214,33 +250,50 @@ export default function UserInfo() {
                 setNewUsername("");
                 setError("");
                 setShowUsernameForm(false);
-
-                // Step 1: Sign out the user
-                await signOut({ redirect: false }); // Prevent redirect to the login page
-
-                // Optional: Add a short delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                // Step 2: Prompt user for password
-                const password = prompt("Please enter your password to sign back in:");
-
-                // Check if password was provided
-                if (!password) {
-                    setError("Password is required to sign back in.");
-                    return;
-                }
-
-                // Sign in the user again with credentials to refresh session data
-                const updatedSession = await signIn("credentials", {
-                    email: session.user.email,
-                    password: password, // Use the provided password
-                    redirect: false // Prevent redirect after sign in
+    
+                // Step 1: Update session without signing out
+                console.log("Updating session with new username...");
+    
+                // Update session state with new username (without requiring re-login)
+                const updatedSession = { ...session, user: { ...session.user, username: newUsername } };
+    
+                // Optionally, you can use next-auth's `setSession` method if available
+                // Example: `setSession(updatedSession);` (if `setSession` is available)
+    
+                // If you're using next-auth, you can refresh the session like this:
+                await fetch('/api/auth/session', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                 });
-
-                if (updatedSession.error) {
-                    console.error("Sign-in error:", updatedSession.error); // Log the specific error
-                    setError("Error signing back in. Please try again.");
-                }
+    
+                // Step 2: Fetch reviews immediately
+                const fetchReviews = async () => {
+                    try {
+                        const reviewResponse = await fetch('/api/getUserReviews', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userId: session.user.id }),
+                        });
+    
+                        const data = await reviewResponse.json();
+    
+                        if (reviewResponse.ok) {
+                            setReviews(data.reviews || []);
+                            setReviewCount(data.reviewCount || 0);
+                            setAverageRating(data.averageRating || 0);
+                        } else {
+                            setError('Failed to load reviews');
+                        }
+                    } catch (error) {
+                        console.error("Error fetching reviews:", error);
+                    }
+                };
+    
+                await fetchReviews();
+    
+                console.log("Username and reviews updated successfully!");
             } else {
                 setError(result.error || "Username change failed.");
             }
@@ -249,6 +302,11 @@ export default function UserInfo() {
             setError("An unexpected error occurred. Please try again.");
         }
     };
+    
+    
+    
+    
+    
 
     // Change profile photo
     const handlePhotoChange = async (e) => {
@@ -533,7 +591,7 @@ export default function UserInfo() {
                             Last Name: <span className="font-bold">{session?.user?.lName || 'N/A'}</span>
                         </div>
                         <div className="text-white text-lg m-2">
-                            UserName: <span className="font-bold">{session?.user?.username || 'N/A'}</span>
+                            UserName: <span className="font-bold">{username || 'N/A'}</span>
                             <button
                                 onClick={() => setShowUsernameForm(!showUsernameForm)}
                                 className="ml-2 text-gray-200">
