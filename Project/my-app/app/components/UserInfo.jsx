@@ -547,6 +547,12 @@ export default function UserInfo() {
                         <div className="text-white text-lg m-2">
                             Password: <span className="font-bold">••••••</span>
                         </div>
+
+                        {/* Spotify Login Button */}
+                        <button onClick={handleSpotifyLogin} className="bg-green-600 text-white w-52 p-2 rounded m-2">
+                            Login with Spotify
+                        </button>
+                        <br></br>
     
                         <button onClick={() => signOut({ callbackUrl: '/' })} className="bg-red-600 text-white p-2 rounded m-2">
                             Log Out
@@ -556,16 +562,6 @@ export default function UserInfo() {
                             Delete Account
                         </button>
     
-                        {/* Spotify Login Button */}
-                        <button onClick={handleSpotifyLogin} className="bg-green-600 text-white w-full p-2 rounded m-2">
-                            Login with Spotify
-                        </button>
-    
-                        <Link href="/dashboard">
-                            <button className="bg-blue-500 text-white p-2 rounded m-2">
-                                Go to Homepage
-                            </button>
-                        </Link>
                     </div>
                 </div>
     
