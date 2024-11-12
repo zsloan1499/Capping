@@ -1,28 +1,22 @@
-import { connectMongoDB } from '../../../lib/mongodb';
+import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
-import { User } from "../../../models/User"; // Adjust the path if necessary
+import { User } from "../../../models/User"; 
 
-export async function GET(req) {
+export async function POST(req) {
     try {
         await connectMongoDB();
-        const { email } = req.nextUrl.searchParams; // Extract email from query parameters
+        const { userId } = await req.json(); // Expecting userId in the request body
 
-        // Check if email is provided
-        if (!email) {
-            return NextResponse.json({ error: "Email is required" }, { status: 400 });
+        // Fetch the user's profile photo URL from the database
+        const user = await User.findById(userId).select("profilePhoto");
+
+        if (user && user.profilePhoto) {
+            return NextResponse.json({ profilePhoto: user.profilePhoto });
+        } else {
+            return NextResponse.json({ profilePhoto: null }); // No profile photo found
         }
-
-        // Fetch user from the database using email
-        const user = await User.findOne({ email }).select("profilePhoto"); // Only select profilePhoto field
-
-        if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
-        }
-
-        // Return the profile photo URL
-        return NextResponse.json({ profilePhoto: user.profilePhoto }, { status: 200 });
     } catch (error) {
-        console.error("Error fetching profile photo:", error);
-        return NextResponse.json({ error: "An error occurred while fetching profile photo" }, { status: 500 });
+        console.log("Error fetching profile photo:", error);
+        return NextResponse.json({ error: "An error occurred during the profile photo fetch." });
     }
 }
