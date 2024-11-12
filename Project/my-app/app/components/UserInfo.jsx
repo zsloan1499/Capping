@@ -22,7 +22,8 @@ export default function UserInfo() {
     const [reviewCount, setReviewCount] = useState(0);
     const [username, setUsername] = useState('');
     const [profilePhoto, setprofilePhoto] = useState('');
-    const [loading, setLoading] = useState(true); // To handle loading state
+    const [showDeletePopup, setShowDeletePopup] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     // Get the username from session on mount
     useEffect(() => {
@@ -224,6 +225,10 @@ export default function UserInfo() {
         });
         const spotifyAuthUrl = 'https://accounts.spotify.com/authorize?' + params.toString();
         window.location.href = spotifyAuthUrl;
+    };
+
+    const deleteAccountPopUp = () => {
+        setShowDeletePopup(true); 
     };
 
     // Deletes user account (unchanged)
@@ -529,6 +534,34 @@ export default function UserInfo() {
 
     return (
         <div className="bg-customBlue w-screen h-screen flex overflow-y-auto">
+            {/* Popup for Account Deletion Confirmation */}
+            {/* Popup for Account Deletion Confirmation */}
+            {showDeletePopup && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg w-80 text-center shadow-lg">
+                        <h2 className="text-lg font-bold mb-4">Confirm Account Deletion</h2>
+                        <p className="text-gray-700 mb-6">Are you sure you want to delete your account? The account will be deleted permanenly and cannot be recovered.</p>
+                        <div className="flex justify-around">
+                            <button 
+                                onClick={deleteAccount}
+                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Delete Account
+                            </button>
+                            <button 
+                                onClick={() => setShowDeletePopup(false)}
+                                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Error Display */}
+            {error && <p className="text-red-500 mt-2">{error}</p>}
+
+            {/* Error Display */}
+            {error && <p style={styles.error}>{error}</p>}
             {/* Navigation on the left side */}
             <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-auto p-4 flex flex-col space-y-4 transition-width duration-300`}>
                 <button
@@ -549,6 +582,7 @@ export default function UserInfo() {
                     </>
                 )}
             </nav>
+            
     
             <div className="flex flex-col w-full">
                 <title>Melodi</title>
@@ -642,7 +676,7 @@ export default function UserInfo() {
                             Log Out
                         </button>
     
-                        <button onClick={deleteAccount} className="bg-red-600 text-white p-2 rounded m-2">
+                        <button onClick={deleteAccountPopUp} className="bg-red-600 text-white p-2 rounded m-2">
                             Delete Account
                         </button>
                     </div>
