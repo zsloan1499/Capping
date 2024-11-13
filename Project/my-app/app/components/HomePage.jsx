@@ -81,7 +81,6 @@ export default function HomePage() {
 
         {isNavOpen && (
             <>
-                <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
                 <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded">New Playlist/Review</Link>
                 <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
                 <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>

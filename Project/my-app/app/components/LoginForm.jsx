@@ -66,9 +66,7 @@ export default function LoginForm() {
                     )}
                     <Link className="text-sm text-white m-2" href={"/register"}> Don't have an account? <span className="underline">Register Here</span> </Link>
                     {/* Google Login Button */}
-                    <button onClick={handleGoogleLogin} className="bg-blue-600 text-white w-full p-2 rounded m-2">Login with Google</button>
-                    {/* Log Out Button */}
-                    <button onClick={() => signOut({ callbackUrl: '/' })} className="bg-red-600 text-white w-full p-2 rounded m-2">Log Out</button>
+                    {/*<button onClick={handleGoogleLogin} className="bg-blue-600 text-white w-full p-2 rounded m-2">Login with Google</button> */}
                     </div>
                 </div>
             </div>
