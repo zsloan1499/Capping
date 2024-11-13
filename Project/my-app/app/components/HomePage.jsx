@@ -18,6 +18,8 @@ export default function HomePage() {
   const [message, setMessage] = useState('');
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [playlistsMessage, setPlaylistsMessage] = useState('');
+  const [topArtists, setTopArtists] = useState([]);
+  const [artistsMessage, setArtistsMessage] = useState('');
 
   const itemStyle = {
     //width: '100%',  // Ensure each item takes up full width of the carousel container
@@ -141,6 +143,39 @@ export default function HomePage() {
     };
   
     fetchUserPlaylists();
+  }, []);
+
+  //useEffect hook to fetch users top artists 
+  useEffect(() => {
+    const fetchTopArtists = async () => {
+      try {
+        const accessToken = sessionStorage.getItem('spotifyAccessToken');
+  
+        if (!accessToken) {
+          setArtistsMessage('Please log in with Spotify to view your top artists.');
+          return;
+        }
+  
+        const response = await fetch('/api/getTopArtists', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          setTopArtists(data);
+        } else {
+          const errorData = await response.json();
+          setArtistsMessage(`Failed to fetch top artists: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error('Error fetching top artists:', error);
+        setArtistsMessage('An error occurred while fetching top artists.');
+      }
+    };
+  
+    fetchTopArtists();
   }, []);
 
   return (
@@ -361,18 +396,65 @@ export default function HomePage() {
   
         {/* Carousel Section - Reviews */}
         <div style={carouselContainerStyle} className="w-full mt-8">
-          <Carousel responsive={responsive} arrows={true}>
-            <div style={itemStyle}>Item 1</div>
-            <div style={itemStyle}>Item 2</div>
-            <div style={itemStyle}>Item 3</div>
-            <div style={itemStyle}>Item 4</div>
-            <div style={itemStyle}>Item 5</div>
-            <div style={itemStyle}>Item 6</div>
-            <div style={itemStyle}>Item 7</div>
-            <div style={itemStyle}>Item 8</div>
-            <div style={itemStyle}>Item 9</div>
-          </Carousel>
-        </div>
+  <h2 className="text-white text-2xl mb-4">Your Top Artists</h2>
+  {artistsMessage && <p className="text-red-500">{artistsMessage}</p>}
+  {topArtists.length > 0 ? (
+    <Carousel responsive={responsive} arrows={true}>
+      {topArtists.map((artist, index) => {
+        const artistImageUrl = artist.images.length > 0 ? artist.images[0].url : null;
+
+        return (
+          <div
+            key={index}
+            className="carousel-item flex flex-col items-center p-2"
+            style={{
+              backgroundColor: 'white',
+              boxSizing: 'border-box',
+              minHeight: '220px',
+            }}
+          >
+            {artistImageUrl && (
+              <img
+                src={artistImageUrl}
+                alt={`Image of ${artist.name}`}
+                style={{
+                  width: '10rem',
+                  height: '10rem',
+                  objectFit: 'cover',
+                  marginBottom: '0.5rem',
+                  borderRadius: '50%',
+                }}
+              />
+            )}
+            <div className="flex flex-col items-center">
+              <p
+                style={{
+                  color: 'black',
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                  margin: 0,
+                }}
+              >
+                {artist.name}
+              </p>
+              <p
+                style={{
+                  color: 'black',
+                  textAlign: 'center',
+                  margin: 0,
+                }}
+              >
+                {artist.genres.slice(0, 2).join(', ')}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </Carousel>
+  ) : (
+    !artistsMessage && <p className="text-white">Loading top artists...</p>
+  )}
+</div>
 
       </div>
     </div>
