@@ -16,6 +16,8 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   const [recentlyPlayedSongs, setRecentlyPlayedSongs] = useState([]);
   const [message, setMessage] = useState('');
+  const [userPlaylists, setUserPlaylists] = useState([]);
+  const [playlistsMessage, setPlaylistsMessage] = useState('');
 
   const itemStyle = {
     //width: '100%',  // Ensure each item takes up full width of the carousel container
@@ -74,6 +76,7 @@ export default function HomePage() {
     }
   };
 
+  //useEffect hook to fetch recently played songs 
   useEffect(() => {
     const fetchRecentlyPlayed = async () => {
       try {
@@ -105,6 +108,39 @@ export default function HomePage() {
     };
   
     fetchRecentlyPlayed();
+  }, []);
+
+  //useEffect hook to fetch users playlists 
+  useEffect(() => {
+    const fetchUserPlaylists = async () => {
+      try {
+        const accessToken = sessionStorage.getItem('spotifyAccessToken');
+  
+        if (!accessToken) {
+          setPlaylistsMessage('Please log in with Spotify to view your playlists.');
+          return;
+        }
+  
+        const response = await fetch('/api/getUserPlaylists', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          setUserPlaylists(data);
+        } else {
+          const errorData = await response.json();
+          setPlaylistsMessage(`Failed to fetch playlists: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error('Error fetching playlists:', error);
+        setPlaylistsMessage('An error occurred while fetching playlists.');
+      }
+    };
+  
+    fetchUserPlaylists();
   }, []);
 
   return (
@@ -186,6 +222,7 @@ export default function HomePage() {
 
         {/* Carousel Section - Recently Played Songs */}
 <div style={carouselContainerStyle} className="w-full mt-8">
+<h4 className="text-white text-2xl mb-4">Your Recently Listened Songs</h4>
   {message && <p className="text-red-500">{message}</p>}
   {recentlyPlayedSongs.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
@@ -261,18 +298,66 @@ export default function HomePage() {
   
         {/* Carousel Section - Your Playlists */}
         <div style={carouselContainerStyle} className="w-full mt-8">
-          <Carousel responsive={responsive} arrows={true}>
-            <div style={itemStyle}>Item 1</div>
-            <div style={itemStyle}>Item 2</div>
-            <div style={itemStyle}>Item 3</div>
-            <div style={itemStyle}>Item 4</div>
-            <div style={itemStyle}>Item 5</div>
-            <div style={itemStyle}>Item 6</div>
-            <div style={itemStyle}>Item 7</div>
-            <div style={itemStyle}>Item 8</div>
-            <div style={itemStyle}>Item 9</div>
-          </Carousel>
-        </div>
+  <h2 className="text-white text-2xl mb-4">Your Playlists</h2>
+  {playlistsMessage && <p className="text-red-500">{playlistsMessage}</p>}
+  {userPlaylists.length > 0 ? (
+    <Carousel responsive={responsive} arrows={true}>
+      {userPlaylists.map((playlist, index) => {
+        const playlistImageUrl =
+          playlist.images && playlist.images.length > 0 ? playlist.images[0].url : null;
+
+        return (
+          <div
+            key={index}
+            className="carousel-item flex flex-col items-center p-2"
+            style={{
+              backgroundColor: 'white',
+              boxSizing: 'border-box',
+              minHeight: '220px',
+            }}
+          >
+            {playlistImageUrl && (
+              <img
+                src={playlistImageUrl}
+                alt={`Cover art for ${playlist.name}`}
+                style={{
+                  width: '10rem',
+                  height: '10rem',
+                  objectFit: 'cover',
+                  marginBottom: '0.5rem',
+                  borderRadius: '8px', // Slightly rounded corners
+                }}
+              />
+            )}
+            <div className="flex flex-col items-center">
+              <p
+                style={{
+                  color: 'black',
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                  margin: 0,
+                }}
+              >
+                {playlist.name}
+              </p>
+              <p
+                style={{
+                  color: 'black',
+                  textAlign: 'center',
+                  margin: 0,
+                }}
+              >
+                {playlist.tracks.total} songs
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </Carousel>
+  ) : (
+    !playlistsMessage && <p className="text-white">Loading your playlists...</p>
+  )}
+</div>
   
         {/* Carousel Section - Reviews */}
         <div style={carouselContainerStyle} className="w-full mt-8">
