@@ -50,7 +50,7 @@ export const authOptions = {
             clientSecret: process.env.NEXT_PUBLIC_S_CLIENT_SECRET,
             authorization: {
                 params: {
-                    scope: "user-read-email playlist-read-private user-top-read user-read-recently-played"
+                    scope: "user-read-email playlist-read-private user-top-read user-read-recently-played playlist-read-private playlist-read-collaborative"
                 },
             },
         }),

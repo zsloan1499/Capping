@@ -221,7 +221,7 @@ export default function UserInfo() {
             response_type: 'code',
             client_id: process.env.NEXT_PUBLIC_S_CLIENT_ID,
             redirect_uri: process.env.NEXT_PUBLIC_S_REDIRECT_URI,
-            scope: "user-read-email playlist-read-private user-top-read user-read-recently-played" //user-top-read = users top songs, 
+            scope: "user-read-email playlist-read-private user-top-read user-read-recently-played playlist-read-private playlist-read-collaborative" //user-top-read = users top songs, 
         });
         const spotifyAuthUrl = 'https://accounts.spotify.com/authorize?' + params.toString();
         window.location.href = spotifyAuthUrl;

@@ -1,7 +1,7 @@
 'use client';
 
 import { BellIcon, CogIcon } from '@heroicons/react/24/solid'; // Import Bell and Cog icons
-import { useState } from 'react'; // Import useState for managing state
+import { useState, useEffect } from 'react'; // Import useState for managing state
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import Carousel from "react-multi-carousel";
@@ -14,14 +14,20 @@ export default function HomePage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [recentlyPlayedSongs, setRecentlyPlayedSongs] = useState([]);
+  const [message, setMessage] = useState('');
 
   const itemStyle = {
-    width: '100%',  // Ensure each item takes up full width of the carousel container
+    //width: '100%',  // Ensure each item takes up full width of the carousel container
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     height: '200px', // Example height, adjust as needed
     backgroundColor: '#f0f0f0', // Example background color
+    //padding: '100px',
+    //boxSizing: 'border-box',
+    minHeight: '300px', // im using this to adjust the position of images 
+    overflow: 'hidden',
   };
 
   const carouselContainerStyle = {
@@ -67,6 +73,39 @@ export default function HomePage() {
         setError('An unexpected error occurred while searching.');
     }
   };
+
+  useEffect(() => {
+    const fetchRecentlyPlayed = async () => {
+      try {
+        const accessToken = sessionStorage.getItem('spotifyAccessToken');
+  
+        if (!accessToken) {
+          setMessage('Spotify access token not found. Please login with Spotify.');
+          return;
+        }
+  
+        // Call backend API
+        const response = await fetch('/api/getRecentlyPlayedSongs', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          setRecentlyPlayedSongs(data.slice(0, 9)); // Get the last 9 songs
+        } else {
+          const errorData = await response.json();
+          setMessage(`Failed to fetch recently played songs: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error('Error fetching recently played songs:', error);
+        setMessage('An error occurred while fetching recently played songs.');
+      }
+    };
+  
+    fetchRecentlyPlayed();
+  }, []);
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
@@ -145,23 +184,83 @@ export default function HomePage() {
             )}
         </div>
 
-        {/* Carousel Section - Your Top Artists */}
-        <div style={carouselContainerStyle} className="w-full">
-          <Carousel responsive={responsive} arrows={true}>
-            <div style={itemStyle}>Item 1</div>
-            <div style={itemStyle}>Item 2</div>
-            <div style={itemStyle}>Item 3</div>
-            <div style={itemStyle}>Item 4</div>
-            <div style={itemStyle}>Item 5</div>
-            <div style={itemStyle}>Item 6</div>
-            <div style={itemStyle}>Item 7</div>
-            <div style={itemStyle}>Item 8</div>
-            <div style={itemStyle}>Item 9</div>
-          </Carousel>
-        </div>
+        {/* Carousel Section - Recently Played Songs */}
+<div style={carouselContainerStyle} className="w-full mt-8">
+  {message && <p className="text-red-500">{message}</p>}
+  {recentlyPlayedSongs.length > 0 ? (
+    <Carousel responsive={responsive} arrows={true}>
+      {recentlyPlayedSongs.map((item, index) => {
+        const track = item.track;
+        const albumImages = track.album.images;
+        const albumImageUrl =
+          albumImages && albumImages.length > 0 ? albumImages[0].url : null;
+
+        return (
+          <div
+      key={index}
+      className="carousel-item"
+      style={{
+      display: 'flex',
+        flexDirection: 'column', // Stack items vertically
+        alignItems: 'center',
+        padding: '10px',
+        boxSizing: 'border-box',
+        minHeight: '220px', // Adjust as needed
+      }}
+    >
+      {albumImageUrl && (
+        <img
+          src={albumImageUrl}
+          alt={`Album art for ${track.name}`}
+          style={{
+            width: '10rem',
+            height: '10rem',
+            objectFit: 'cover',
+            marginBottom: '0.5rem',
+            borderRadius: '9999px',
+          }}
+        />
+      )}
+      {/* Text Container */}
+      <div
+        className="text-container"
+        style={{
+          display: 'flex',
+          flexDirection: 'column', // Stack text elements vertically
+          alignItems: 'center',
+        }}
+      >
+        <p
+          style={{
+            color: 'black',
+            textAlign: 'center',
+            fontWeight: 'bold',
+            margin: 0,
+          }}
+        >
+          {track.name}
+        </p>
+        <p
+          style={{
+            color: 'black',
+            textAlign: 'center',
+            margin: 0,
+          }}
+        >
+          {track.artists.map((artist) => artist.name).join(', ')}
+        </p>
+      </div>
+    </div>
+  );
+})}
+    </Carousel>
+  ) : (
+    !message && <p className="text-white">Loading recently played songs...</p>
+  )}
+</div>
   
         {/* Carousel Section - Your Playlists */}
-        <div style={carouselContainerStyle} className="w-full">
+        <div style={carouselContainerStyle} className="w-full mt-8">
           <Carousel responsive={responsive} arrows={true}>
             <div style={itemStyle}>Item 1</div>
             <div style={itemStyle}>Item 2</div>
@@ -176,7 +275,7 @@ export default function HomePage() {
         </div>
   
         {/* Carousel Section - Reviews */}
-        <div style={carouselContainerStyle} className="w-full">
+        <div style={carouselContainerStyle} className="w-full mt-8">
           <Carousel responsive={responsive} arrows={true}>
             <div style={itemStyle}>Item 1</div>
             <div style={itemStyle}>Item 2</div>
