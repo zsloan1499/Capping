@@ -139,42 +139,43 @@ export default function RateSong({ spotifyId, userId }) {
                 Submit Rating
             </button>
             {message && <p className="mt-2 text-gray-700">{message}</p>}
+{/* Additional Section */}
+<h3 className="font-bold text-lg mt-6">Recently Played Songs</h3>
+        {recentlyPlayed.length > 0 ? (
+            <ul>
+                {recentlyPlayed.map((item, index) => {
+                    const track = item.track;
+                    const albumImages = track.album.images;
+                    const albumImageUrl =
+                        albumImages && albumImages.length > 0 ? albumImages[0].url : null;
 
-            {/* Additional Section */}
-            <h3 className="font-bold text-lg mt-6">Recently Played Songs</h3>
-            {recentlyPlayed.length > 0 ? (
-            <ul>
-                {recentlyPlayed.map((track, index) => (
-                <li key={index} className="my-2">
-                    <p><strong>Song:</strong> {track.track.name}</p>
-                    <p>
-                    <strong>Artist:</strong>{" "}
-                    {track.track.artists.map((artist) => artist.name).join(", ")}
-                    </p>
-                </li>
-                ))}
+                    return (
+                        <li key={index} className="my-4 flex items-center">
+                            {albumImageUrl && (
+                                <img
+                                    src={albumImageUrl}
+                                    alt={`Album art for ${track.name}`}
+                                    className="w-16 h-16 mr-4"
+                                />
+                            )}
+                            <div>
+                                <p>
+                                    <strong>Song:</strong> {track.name}
+                                </p>
+                                <p>
+                                    <strong>Artist:</strong>{" "}
+                                    {track.artists.map((artist) => artist.name).join(", ")}
+                                </p>
+                            </div>
+                        </li>
+                    );
+                })}
             </ul>
-            ) : (
+        ) : (
             <p>Loading recently played songs...</p>
-            )}
-        </div>
-    );
-    
-     //display recently played songs 
-/*     return (
-        <div>
-            <h2>Recently Played Songs</h2>
-            {message && <p>{message}</p>}
-            <ul>
-                {songs.map((item, index) => (
-                    <li key={index}>
-                        <p><strong>{item.track.name}</strong> by {item.track.artists.map(artist => artist.name).join(", ")}</p>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
-*/
+        )}
+    </div>
+);
 
 /*
     //display users top songs
