@@ -18,7 +18,7 @@ export async function POST(req) {
         const reviews = await Review.find({ user: userId })
             .populate('song', 'name artist')  // Populate the song data (name, artist)
             .populate('user', 'username')  // Populate user data (username)
-            .select('reviewText rating song user'); // Only select relevant data
+            .select('reviewText rating song user likes likedBy'); // Only select relevant data
 
         // If no reviews are found, return an error
         if (!reviews || reviews.length === 0) {

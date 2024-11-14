@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { signOut, signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { FaThumbsUp } from 'react-icons/fa';
 
 export default function UserInfo() {
     const { data: session } = useSession();
@@ -24,6 +25,8 @@ export default function UserInfo() {
     const [profilePhoto, setprofilePhoto] = useState('');
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [likedReviews, setLikedReviews] = useState({});
+
 
     // Get the username from session on mount
     useEffect(() => {
@@ -134,36 +137,32 @@ export default function UserInfo() {
     }, []);
 
     useEffect(() => {
-        if (!session?.user?.id) {
-            console.log("User is not logged in or session is not available");
-            return;
-        }
+        if (session?.user?.id) {
+            const fetchReviews = async () => {
+                try {
+                    const response = await fetch('/api/getUserReviews', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: session.user.id }),
+                    });
 
-        const fetchReviews = async () => {
-            try {
-                const response = await fetch('/api/getUserReviews', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: session.user.id }),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    setReviews(data.reviews || []);
-                    setReviewCount(data.reviewCount || 0);
-                    setAverageRating(data.averageRating || 0);
-                } else {
-                    setError('Failed to load reviews');
+                    const data = await response.json();
+                    if (response.ok) {
+                        setReviews(data.reviews || []);
+                    } else {
+                        setError('Failed to load reviews');
+                    }
+                } catch (error) {
+                    console.error("Error fetching reviews:", error);
+                    setError('Error fetching reviews');
                 }
-            } catch (error) {
-                console.error("Error fetching reviews:", error);
-                //setError('Error fetching reviews');
-            }
-        };
+            };
 
-        fetchReviews();
+            fetchReviews();
+        }
     }, [session?.user?.id]);
+
+
 
     //exchange code in url for Spotify Token 
     const exchangeCodeForToken = async (code) => {
@@ -529,12 +528,60 @@ export default function UserInfo() {
             setError("An unexpected error occurred. Please try again.");
         }
     };
+
+    const handleLike = async (reviewId) => {
+        try {
+            // Ensure the reviewId and session user ID are valid
+            if (!reviewId || !session.user.id) {
+                console.error('Invalid reviewId or userId:', reviewId, session.user.id);
+                return;
+            }
+    
+            // Log reviewId and userId for debugging
+            console.log('Review ID:', reviewId);
+            console.log('User ID:', session.user.id);
+    
+            // Send like request to the backend
+            const response = await fetch('/api/addLike', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    reviewId,  // Send review ID
+                    userId: session.user.id,  // Send user ID
+                }),
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                // Optionally, update UI if you want to reflect changes in frontend state (e.g., likes count)
+                setLikedReviews(prevState => ({
+                    ...prevState,
+                    [reviewId]: !prevState[reviewId], // Toggle like status for the current review
+                }));
+    
+                // Update the review's like count with the new data from the backend
+                setReviews(prevReviews =>
+                    prevReviews.map(review =>
+                        review._id === reviewId
+                            ? { ...review, likes: data.likes }  // Update likes from backend
+                            : review
+                    )
+                );
+            } else {
+                setError(data.error || 'Failed to like the review');
+            }
+        } catch (err) {
+            console.error("Error liking review:", err);
+            setError('Error liking review');
+        }
+    };
+    
     
 
 
     return (
         <div className="bg-customBlue w-screen h-screen flex overflow-y-auto">
-            {/* Popup for Account Deletion Confirmation */}
             {/* Popup for Account Deletion Confirmation */}
             {showDeletePopup && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -557,11 +604,7 @@ export default function UserInfo() {
                 </div>
             )}
 
-            {/* Error Display */}
-            {error && <p className="text-red-500 mt-2">{error}</p>}
 
-            {/* Error Display */}
-            {error && <p style={styles.error}>{error}</p>}
             {/* Navigation on the left side */}
             <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-auto p-4 flex flex-col space-y-4 transition-width duration-300`}>
                 <button
@@ -744,23 +787,35 @@ export default function UserInfo() {
     
                 {/* Reviews Section */}
                 <div className="mt-8 px-8 w-full">
-                    <h2 className="text-2xl text-white mb-6">{`Reviews (${reviewCount})`}</h2>
-                    <div className="space-y-8">
-                        {reviews.map((review) => (
-                            <div key={review._id} className="bg-opacity-50 bg-gray-800 text-white p-6 rounded-lg">
-                                {/* Review Header */}
-                                <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <p className="text-lg font-semibold">{review.username}</p>
-                                        <p className="text-md italic">{review.songName} by <span className="font-bold">{review.songArtist}</span></p>
-                                    </div>
-                                    <p className="text-lg font-semibold text-right">Rating: {review.rating}</p>
-                                </div>
-    
-                                {/* Review Text */}
-                                <p className="text-lg mt-4">{review.reviewText}</p>
-                            </div>
-                        ))}
+            <h2 className="text-2xl text-white mb-6">{`Reviews (${reviews.length})`}</h2>
+            <div className="space-y-8">
+            {reviews.map((review) => (
+    <div key={review._id} className="bg-opacity-50 bg-gray-800 text-white p-6 rounded-lg">
+        <div className="flex justify-between items-start mb-2">
+            <div>
+                <p className="text-lg font-semibold">{review.username}</p>
+                <p className="text-md italic">{review.songName} by <span className="font-bold">{review.songArtist}</span></p>
+            </div>
+            <p className="text-lg font-semibold text-right">Rating: {review.rating}</p>
+        </div>
+
+        <p className="text-lg mt-4">{review.reviewText}</p>
+
+        {/* Like Button */}
+        <div className="flex items-center mt-4">
+            <button
+                onClick={() => handleLike(review._id)} // Pass review._id directly to handleLike
+                className={`flex items-center space-x-2 text-white py-2 px-4 rounded hover:bg-blue-600 ${likedReviews[review._id] ? 'bg-blue-500' : 'bg-gray-500'}`}
+            >
+                <FaThumbsUp />
+                {/* Ensure likes has a fallback */}
+                <span>{review.likes || 0}</span>
+            </button>
+        </div>
+    </div>
+))}
+
+
                     </div>
                 </div>
     
