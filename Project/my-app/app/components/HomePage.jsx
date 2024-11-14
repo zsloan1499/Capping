@@ -22,6 +22,7 @@ export default function HomePage() {
   const [artistsMessage, setArtistsMessage] = useState('');
   const [recentlyPlayedAlbums, setRecentlyPlayedAlbums] = useState([]);
   const [albumsMessage, setAlbumsMessage] = useState('');
+  const [recentlyListenedArtists, setRecentlyListenedArtists] = useState([]);
 
   const itemStyle = {
     //width: '100%',  // Ensure each item takes up full width of the carousel container
@@ -212,6 +213,40 @@ export default function HomePage() {
   
     fetchRecentlyPlayedAlbums();
   }, []);
+
+  //useEffect hook to fetch users recent listened to artists
+  useEffect(() => {
+    const fetchRecentlyListenedArtists = async () => {
+      try {
+        const accessToken = sessionStorage.getItem('spotifyAccessToken');
+  
+        if (!accessToken) {
+          setArtistsMessage('Please log in with Spotify to view your recently listened artists.');
+          return;
+        }
+  
+        const response = await fetch('/api/getRecentlyPlayedArtists', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          setRecentlyListenedArtists(data);
+        } else {
+          const errorData = await response.json();
+          setArtistsMessage(`Failed to fetch recently listened artists: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error('Error fetching recently listened artists:', error);
+        setArtistsMessage('An error occurred while fetching recently listened artists.');
+      }
+    };
+  
+    fetchRecentlyListenedArtists();
+  }, []);
+  
   
 
   return (
@@ -305,15 +340,12 @@ export default function HomePage() {
 
         return (
           <div
-      key={index}
-      className="carousel-item"
-      style={{
-      display: 'flex',
-        flexDirection: 'column', // Stack items vertically
-        alignItems: 'center',
-        padding: '10px',
-        boxSizing: 'border-box',
-        minHeight: '220px', // Adjust as needed
+          key={index}
+          className="carousel-item flex flex-col items-center p-2"
+          style={{
+            backgroundColor: 'white',
+            boxSizing: 'border-box',
+            minHeight: '220px',
       }}
     >
       {albumImageUrl && (
@@ -545,6 +577,72 @@ export default function HomePage() {
     </Carousel>
   ) : (
     !albumsMessage && <p className="text-white">Loading recently played albums...</p>
+  )}
+</div>
+
+{/* Carousel Section - Recently Listened Artists */}
+<div style={carouselContainerStyle} className="w-full mt-8">
+  <h2 className="text-white text-2xl mb-4">Recently Listened Artists</h2>
+  {artistsMessage && <p className="text-red-500">{artistsMessage}</p>}
+  {recentlyListenedArtists.length > 0 ? (
+    <Carousel responsive={responsive} arrows={true}>
+      {recentlyListenedArtists.map((artist, index) => {
+        const artistImageUrl = artist.images && artist.images.length > 0 ? artist.images[0].url : null;
+
+        return (
+          <div
+            key={index}
+            className="carousel-item flex flex-col items-center p-2"
+            style={{
+              backgroundColor: 'white',
+              boxSizing: 'border-box',
+              minHeight: '220px',
+            }}
+          >
+            {artistImageUrl ? (
+              <img
+                src={artistImageUrl}
+                alt={`Image of ${artist.name}`}
+                style={{
+                  width: '10rem',
+                  height: '10rem',
+                  objectFit: 'cover',
+                  marginBottom: '0.5rem',
+                  borderRadius: '50%',
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: '10rem',
+                  height: '10rem',
+                  backgroundColor: '#e0e0e0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                <span style={{ color: 'gray' }}>No Image</span>
+              </div>
+            )}
+            <p
+              style={{
+                color: 'black',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                margin: 0,
+              }}
+            >
+              {artist.name}
+            </p>
+          </div>
+        );
+      })}
+    </Carousel>
+  ) : (
+    !artistsMessage && <p className="text-white">Loading recently listened artists...</p>
   )}
 </div>
 
