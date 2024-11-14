@@ -20,6 +20,8 @@ export default function HomePage() {
   const [playlistsMessage, setPlaylistsMessage] = useState('');
   const [topArtists, setTopArtists] = useState([]);
   const [artistsMessage, setArtistsMessage] = useState('');
+  const [recentlyPlayedAlbums, setRecentlyPlayedAlbums] = useState([]);
+  const [albumsMessage, setAlbumsMessage] = useState('');
 
   const itemStyle = {
     //width: '100%',  // Ensure each item takes up full width of the carousel container
@@ -177,6 +179,40 @@ export default function HomePage() {
   
     fetchTopArtists();
   }, []);
+
+  //useEffect hook to fetch users recent listened to albums 
+  useEffect(() => {
+    const fetchRecentlyPlayedAlbums = async () => {
+      try {
+        const accessToken = sessionStorage.getItem('spotifyAccessToken');
+  
+        if (!accessToken) {
+          setAlbumsMessage('Please log in with Spotify to view your recently played albums.');
+          return;
+        }
+  
+        const response = await fetch('/api/getRecentlyPlayedAlbums', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          setRecentlyPlayedAlbums(data);
+        } else {
+          const errorData = await response.json();
+          setAlbumsMessage(`Failed to fetch recently played albums: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error('Error fetching recently played albums:', error);
+        setAlbumsMessage('An error occurred while fetching recently played albums.');
+      }
+    };
+  
+    fetchRecentlyPlayedAlbums();
+  }, []);
+  
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
@@ -453,6 +489,62 @@ export default function HomePage() {
     </Carousel>
   ) : (
     !artistsMessage && <p className="text-white">Loading top artists...</p>
+  )}
+</div>
+
+{/* Carousel Section - Recently Played Albums */}
+<div style={carouselContainerStyle} className="w-full mt-8">
+  <h2 className="text-white text-2xl mb-4">Recently Played Albums</h2>
+  {albumsMessage && <p className="text-red-500">{albumsMessage}</p>}
+  {recentlyPlayedAlbums.length > 0 ? (
+    <Carousel responsive={responsive} arrows={true}>
+      {recentlyPlayedAlbums.map((album, index) => (
+        <div
+          key={index}
+          className="carousel-item flex flex-col items-center p-2"
+          style={{
+            backgroundColor: 'white',
+            boxSizing: 'border-box',
+            minHeight: '220px',
+          }}
+        >
+          <img
+            src={album.images[0]?.url}
+            alt={`Album art for ${album.name}`}
+            style={{
+              width: '10rem',
+              height: '10rem',
+              objectFit: 'cover',
+              marginBottom: '0.5rem',
+              borderRadius: '50%',
+            }}
+          />
+          <div className="flex flex-col items-center">
+            <p
+              style={{
+                color: 'black',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                margin: 0,
+              }}
+            >
+              {album.name}
+            </p>
+            <p
+              style={{
+                color: 'black',
+                textAlign: 'center',
+                margin: 0,
+              }}
+            >
+              {album.artists.map((artist) => artist.name).join(', ')}
+            </p>
+          </div>
+        </div>
+      ))}
+    </Carousel>
+  ) : (
+    !albumsMessage && <p className="text-white">Loading recently played albums...</p>
   )}
 </div>
 
