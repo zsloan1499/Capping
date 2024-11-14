@@ -105,7 +105,7 @@ export default function FriendInfo() {
             checkIfFollowing();
         }
     }, [session, username]);
-
+    
     // Toggle follow/unfollow
     const handleFollowToggle = async () => {
         setButtonLoading(true);
@@ -153,7 +153,7 @@ export default function FriendInfo() {
                         <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded w-full">Home</Link>
                         <Link href="/placeholder1" className="text-white p-2 hover:bg-gray-700 rounded w-full">New Playlist/Review</Link>
                         <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded w-full">Playlists</Link>
-                        <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded w-full">Reviews</Link>
+                        <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded w-full">Reviews</Link> 
                         <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded w-full">Social</Link>
                         <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded w-full">Global Ranking</Link>
                     </>
@@ -187,29 +187,38 @@ export default function FriendInfo() {
     
                         {/* Display User Reviews */}
                         <div className="mt-8 px-8 w-full">
-                            <h2 className="text-2xl text-white mb-6">{`Reviews (${reviews.length})`}</h2>
-                            <div className="space-y-8">
-                            {reviews.length > 0 ? (
-    reviews.map((review) => (
-        <div key={review._id} className="bg-opacity-50 bg-gray-800 text-white p-6 rounded-lg">
-            {/* Review Header */}
-            <div className="flex justify-between items-start mb-2">
-                <div>
-                    <p className="text-lg font-semibold">{review.user ? review.user.username : 'Unknown User'}</p>
-                    <p className="text-md italic">
-                        {review.song ? `${review.song.title} by ${review.song.artist}` : 'Song details missing'}
+    {/* Header for Reviews */}
+    <h2 className="text-2xl text-white mb-6">{`Reviews (${reviews.length})`}</h2>
+
+    {/* Reviews List */}
+    <div className="space-y-8">
+        {reviews.length > 0 ? (
+            reviews.map((review) => (
+                <div key={review._id} className="bg-opacity-50 bg-gray-800 text-white p-6 rounded-lg">
+                    {/* Review Header */}
+                    <div className="flex justify-between items-start mb-2">
+                        <div>
+                            <p className="text-lg font-semibold">
+                                {review.user ? review.user.username : 'Unknown User'}
+                            </p>
+                            <p className="text-md italic">
+                                {review.song ? `${review.song.name} by ${review.song.artist}` : 'Song details missing'}
+                            </p>
+                        </div>
+                        <p className="text-lg font-semibold text-right">
+                            Rating: {review.rating}/10
+                        </p>
+                    </div>
+
+                    {/* Review Text */}
+                    <p className="text-lg mt-4">
+                        {review.reviewText || 'No review text provided'}
                     </p>
                 </div>
-                <p className="text-lg font-semibold text-right">Rating: {review.rating}/10</p>
-            </div>
-
-            {/* Review Text */}
-            <p className="text-lg mt-4">{review.reviewText || 'No review text provided'}</p>
-        </div>
-    ))
-) : (
-    <p className="text-gray-300">No reviews available for this user.</p>
-)}
+            ))
+        ) : (
+            <p className="text-gray-300">No reviews available for this user.</p>
+        )}
                             </div>
                         </div>
                     </>

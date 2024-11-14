@@ -1,17 +1,24 @@
+// api/getFriendReviews/route.js
 import { connectMongoDB } from "../../../lib/mongodb";
-import { User, Review, Song } from "/models/User"; // Ensure the Song model has title and artist
+import { User, Review } from "/models/User";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
     await connectMongoDB();
-    const { userId } = await req.json();
 
+    const { username } = await req.json(); // Expect username in the request
     try {
-        // Populate the song reference in each review
-        const reviews = await Review.find({ userId })
-            .populate('song', 'title artist') // 'song' is the reference field in Review, and 'title artist' are the fields you want to populate
-            .populate('user', 'username'); // Optionally, populate the user reference if needed
-        
+        // Find user by username to get their userId
+        const user = await User.findOne({ username });
+        if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
+        // Query reviews by userId
+        const reviews = await Review.find({ user: user._id })
+            .populate('song', 'name artist') // Changed `title` to `name` for song name
+            .populate('user', 'username');
+
         return NextResponse.json({ reviews });
     } catch (error) {
         console.error("Error fetching user reviews:", error);
