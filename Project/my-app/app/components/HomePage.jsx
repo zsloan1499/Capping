@@ -46,19 +46,19 @@ export default function HomePage() {
   const responsive = {
     superLargeDesktop: {
       breakpoint: { max: 4000, min: 3000 },
-      items: 4
+      items: 6
     },
     desktop: {
       breakpoint: { max: 3000, min: 1024 },
-      items: 3
+      items: 4 //how many items are displayed on carrousel at one time 
     },
     tablet: {
       breakpoint: { max: 1024, min: 464 },
-      items: 2
+      items: 3
     },
     mobile: {
       breakpoint: { max: 464, min: 0 },
-      items: 1
+      items: 2
     }
   };
 
@@ -247,7 +247,8 @@ export default function HomePage() {
     fetchRecentlyListenedArtists();
   }, []);
   
-  
+  const carouselItemClass =
+    'carousel-item flex flex-col items-center justify-center p-4 bg-[#F5FFFA] hover:bg-[#FFC0CB] min-h-[280px] hover:scale-125 transition transform duration-300';
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
@@ -328,7 +329,7 @@ export default function HomePage() {
 
         {/* Carousel Section - Recently Played Songs */}
 <div style={carouselContainerStyle} className="w-full mt-8">
-<h4 className="text-white text-2xl mb-4">Your Recently Listened Songs</h4>
+<h2 className="text-white text-2xl mb-4">Recently Played</h2>
   {message && <p className="text-red-500">{message}</p>}
   {recentlyPlayedSongs.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
@@ -338,62 +339,27 @@ export default function HomePage() {
         const albumImageUrl =
           albumImages && albumImages.length > 0 ? albumImages[0].url : null;
 
-        return (
-          <div
-          key={index}
-          className="carousel-item flex flex-col items-center p-2"
-          style={{
-            backgroundColor: 'white',
-            boxSizing: 'border-box',
-            minHeight: '220px',
-      }}
-    >
-      {albumImageUrl && (
-        <img
-          src={albumImageUrl}
-          alt={`Album art for ${track.name}`}
-          style={{
-            width: '10rem',
-            height: '10rem',
-            objectFit: 'cover',
-            marginBottom: '0.5rem',
-            borderRadius: '9999px',
-          }}
-        />
-      )}
-      {/* Text Container */}
-      <div
-        className="text-container"
-        style={{
-          display: 'flex',
-          flexDirection: 'column', // Stack text elements vertically
-          alignItems: 'center',
-        }}
-      >
-        <p
-          style={{
-            color: 'black',
-            textAlign: 'center',
-            fontWeight: 'bold',
-            margin: 0,
-          }}
-        >
-          {track.name}
-        </p>
-        <p
-          style={{
-            color: 'black',
-            textAlign: 'center',
-            margin: 0,
-          }}
-        >
-          {track.artists.map((artist) => artist.name).join(', ')}
-        </p>
-      </div>
-    </div>
-  );
-})}
-    </Carousel>
+          return (
+            <div key={index} className={carouselItemClass}>
+              {albumImageUrl ? (
+                <img
+                  src={albumImageUrl}
+                  alt={`Album art for ${track.name}`}
+                  className="w-40 h-40 object-cover mb-2 rounded-full"
+                />
+              ) : (
+                <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-full mb-2">
+                  <span className="text-gray-500">No Image</span>
+                </div>
+              )}
+              <p className="text-black text-center font-bold m-0">{track.name}</p>
+              <p className="text-black text-center m-0">
+                {track.artists.map((artist) => artist.name).join(', ')}
+              </p>
+            </div>
+          );
+        })}
+      </Carousel>
   ) : (
     !message && <p className="text-white">Loading recently played songs...</p>
   )}
@@ -409,60 +375,31 @@ export default function HomePage() {
         const playlistImageUrl =
           playlist.images && playlist.images.length > 0 ? playlist.images[0].url : null;
 
-        return (
-          <div
-            key={index}
-            className="carousel-item flex flex-col items-center p-2"
-            style={{
-              backgroundColor: 'white',
-              boxSizing: 'border-box',
-              minHeight: '220px',
-            }}
-          >
-            {playlistImageUrl && (
-              <img
-                src={playlistImageUrl}
-                alt={`Cover art for ${playlist.name}`}
-                style={{
-                  width: '10rem',
-                  height: '10rem',
-                  objectFit: 'cover',
-                  marginBottom: '0.5rem',
-                  borderRadius: '8px', // Slightly rounded corners
-                }}
-              />
-            )}
-            <div className="flex flex-col items-center">
-              <p
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  margin: 0,
-                }}
-              >
-                {playlist.name}
-              </p>
-              <p
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  margin: 0,
-                }}
-              >
-                {playlist.tracks.total} songs
-              </p>
+          return (
+            <div key={index} className={carouselItemClass}>
+              {playlistImageUrl ? (
+                <img
+                  src={playlistImageUrl}
+                  alt={`Cover art for ${playlist.name}`}
+                  className="w-40 h-40 object-cover mb-2 rounded-lg"
+                />
+              ) : (
+                <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-lg mb-2">
+                  <span className="text-gray-500">No Image</span>
+                </div>
+              )}
+              <p className="text-black text-center font-bold m-0">{playlist.name}</p>
+              <p className="text-black text-center m-0">{playlist.tracks.total} songs</p>
             </div>
-          </div>
-        );
-      })}
-    </Carousel>
+          );
+        })}
+      </Carousel>
   ) : (
     !playlistsMessage && <p className="text-white">Loading your playlists...</p>
   )}
 </div>
   
-        {/* Carousel Section - Reviews */}
+        {/* Carousel Section - Your Top Artists */}
         <div style={carouselContainerStyle} className="w-full mt-8">
   <h2 className="text-white text-2xl mb-4">Your Top Artists</h2>
   {artistsMessage && <p className="text-red-500">{artistsMessage}</p>}
@@ -472,49 +409,22 @@ export default function HomePage() {
         const artistImageUrl = artist.images.length > 0 ? artist.images[0].url : null;
 
         return (
-          <div
-            key={index}
-            className="carousel-item flex flex-col items-center p-2"
-            style={{
-              backgroundColor: 'white',
-              boxSizing: 'border-box',
-              minHeight: '220px',
-            }}
-          >
-            {artistImageUrl && (
+          <div key={index} className={carouselItemClass}>
+            {artistImageUrl ? (
               <img
                 src={artistImageUrl}
                 alt={`Image of ${artist.name}`}
-                style={{
-                  width: '10rem',
-                  height: '10rem',
-                  objectFit: 'cover',
-                  marginBottom: '0.5rem',
-                  borderRadius: '50%',
-                }}
+                className="w-40 h-40 object-cover mb-2 rounded-full"
               />
+            ) : (
+              <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-full mb-2">
+                <span className="text-gray-500">No Image</span>
+              </div>
             )}
-            <div className="flex flex-col items-center">
-              <p
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  margin: 0,
-                }}
-              >
-                {artist.name}
-              </p>
-              <p
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  margin: 0,
-                }}
-              >
-                {artist.genres.slice(0, 2).join(', ')}
-              </p>
-            </div>
+            <p className="text-black text-center font-bold m-0">{artist.name}</p>
+            <p className="text-black text-center m-0">
+              {artist.genres.slice(0, 2).join(', ')}
+            </p>
           </div>
         );
       })}
@@ -531,50 +441,25 @@ export default function HomePage() {
   {recentlyPlayedAlbums.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
       {recentlyPlayedAlbums.map((album, index) => (
-        <div
-          key={index}
-          className="carousel-item flex flex-col items-center p-2"
-          style={{
-            backgroundColor: 'white',
-            boxSizing: 'border-box',
-            minHeight: '220px',
-          }}
-        >
-          <img
-            src={album.images[0]?.url}
-            alt={`Album art for ${album.name}`}
-            style={{
-              width: '10rem',
-              height: '10rem',
-              objectFit: 'cover',
-              marginBottom: '0.5rem',
-              borderRadius: '50%',
-            }}
-          />
-          <div className="flex flex-col items-center">
-            <p
-              style={{
-                color: 'black',
-                textAlign: 'center',
-                fontWeight: 'bold',
-                margin: 0,
-              }}
-            >
-              {album.name}
-            </p>
-            <p
-              style={{
-                color: 'black',
-                textAlign: 'center',
-                margin: 0,
-              }}
-            >
-              {album.artists.map((artist) => artist.name).join(', ')}
-            </p>
-          </div>
-        </div>
-      ))}
-    </Carousel>
+         <div key={index} className={carouselItemClass}>
+         {album.images?.[0]?.url ? (
+           <img
+             src={album.images[0].url}
+             alt={`Album art for ${album.name}`}
+             className="w-40 h-40 object-cover mb-2 rounded-lg"
+           />
+         ) : (
+           <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-lg mb-2">
+             <span className="text-gray-500">No Image</span>
+           </div>
+         )}
+         <p className="text-black text-center font-bold m-0">{album.name}</p>
+         <p className="text-black text-center m-0">
+           {album.artists.map((artist) => artist.name).join(', ')}
+         </p>
+       </div>
+     ))}
+   </Carousel>
   ) : (
     !albumsMessage && <p className="text-white">Loading recently played albums...</p>
   )}
@@ -590,53 +475,19 @@ export default function HomePage() {
         const artistImageUrl = artist.images && artist.images.length > 0 ? artist.images[0].url : null;
 
         return (
-          <div
-            key={index}
-            className="carousel-item flex flex-col items-center p-2"
-            style={{
-              backgroundColor: 'white',
-              boxSizing: 'border-box',
-              minHeight: '220px',
-            }}
-          >
+          <div key={index} className={carouselItemClass}>
             {artistImageUrl ? (
               <img
                 src={artistImageUrl}
                 alt={`Image of ${artist.name}`}
-                style={{
-                  width: '10rem',
-                  height: '10rem',
-                  objectFit: 'cover',
-                  marginBottom: '0.5rem',
-                  borderRadius: '50%',
-                }}
+                className="w-40 h-40 object-cover mb-2 rounded-full"
               />
             ) : (
-              <div
-                style={{
-                  width: '10rem',
-                  height: '10rem',
-                  backgroundColor: '#e0e0e0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '50%',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                <span style={{ color: 'gray' }}>No Image</span>
+              <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-full mb-2">
+                <span className="text-gray-500">No Image</span>
               </div>
             )}
-            <p
-              style={{
-                color: 'black',
-                textAlign: 'center',
-                fontWeight: 'bold',
-                margin: 0,
-              }}
-            >
-              {artist.name}
-            </p>
+            <p className="text-black text-center font-bold m-0">{artist.name}</p>
           </div>
         );
       })}
