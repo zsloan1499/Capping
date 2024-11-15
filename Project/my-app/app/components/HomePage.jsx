@@ -46,19 +46,19 @@ export default function HomePage() {
   const responsive = {
     superLargeDesktop: {
       breakpoint: { max: 4000, min: 3000 },
-      items: 4
+      items: 6
     },
     desktop: {
       breakpoint: { max: 3000, min: 1024 },
-      items: 3
+      items: 4 //how many items are displayed on carrousel at one time 
     },
     tablet: {
       breakpoint: { max: 1024, min: 464 },
-      items: 2
+      items: 3
     },
     mobile: {
       breakpoint: { max: 464, min: 0 },
-      items: 1
+      items: 2
     }
   };
 
@@ -329,7 +329,7 @@ export default function HomePage() {
 
         {/* Carousel Section - Recently Played Songs */}
 <div style={carouselContainerStyle} className="w-full mt-8">
-<h4 className="text-white text-2xl mb-4">Your Recently Listened Songs</h4>
+<h2 className="text-white text-2xl mb-4">Recently Played</h2>
   {message && <p className="text-red-500">{message}</p>}
   {recentlyPlayedSongs.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
