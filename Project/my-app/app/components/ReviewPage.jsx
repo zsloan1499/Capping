@@ -201,7 +201,7 @@ export default function HomePage() {
             ))}
           </select>
 
-          <label className="text-white ml-5 mr-3">Select a Number:</label>
+          <label className="text-white ml-5 mr-3">Rate our of Ten:</label>
           <select 
             id="numberSelect" 
             value={selectedNumber} 
