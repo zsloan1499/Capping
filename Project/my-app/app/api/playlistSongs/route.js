@@ -1,0 +1,31 @@
+import { connectMongoDB } from '../../lib/mongodb';
+import Playlist from '../../models/playlist';
+import Song from '../../models/song';
+import { getSession } from 'next-auth/react';
+
+export default async function handler(req, res) {
+  const session = await getSession({ req });
+  if (!session) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { playlistId, songId } = req.body;
+
+  await connectMongoDB();
+
+  if (req.method === 'POST') {
+    try {
+      const playlist = await Playlist.findById(playlistId);
+      const song = await Song.findById(songId);
+      if (!song) {
+        return res.status(404).json({ error: 'Song not found' });
+      }
+
+      playlist.songs.push(song);
+      await playlist.save();
+      res.status(200).json({ message: 'Song added to playlist', playlist });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to add song to playlist' });
+    }
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
+  }
+}
