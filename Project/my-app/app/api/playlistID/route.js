@@ -1,4 +1,5 @@
-import { connectMongoDB } from '../../lib/mongodb';
+//api/playlistID/route.js
+import { connectMongoDB } from '/lib/mongodb';
 import Playlist from '../../models/playlist';
 import { getSession } from 'next-auth/react';
 

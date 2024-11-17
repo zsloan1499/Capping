@@ -1,6 +1,7 @@
+// api/playlists/route.js
 import { connectMongoDB } from '/lib/mongodb';
-import Playlist from '/models/user';
-import { getSession } from 'next-auth/react';  // Assuming you're using NextAuth for authentication
+import Playlist from '/models/user'; 
+import { getSession } from 'next-auth/react';
 
 export default async function handler(req, res) {
   const session = await getSession({ req });
