@@ -21,8 +21,8 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: "Song not found" });
       }
 
-      playlist.songs.push(song);
-      await playlist.save();
+      playlist.songs.push(song);  // Add the song to the playlist's songs array
+      await playlist.save();  // Save the updated playlist
       res.status(200).json({ message: "Song added to playlist", playlist });
     } catch (error) {
       res.status(500).json({ error: "Failed to add song to playlist" });
@@ -31,3 +31,4 @@ export default async function handler(req, res) {
     res.status(405).json({ error: "Method not allowed" });
   }
 }
+
