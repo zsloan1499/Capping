@@ -155,6 +155,7 @@ export default function FriendInfo() {
                         <Link href="/placeholder2" className="text-white p-2 hover:bg-gray-700 rounded w-full">Playlists</Link>
                         <Link href="/rate-song" className="text-white p-2 hover:bg-gray-700 rounded w-full">Reviews</Link> 
                         <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded w-full">Social</Link>
+                        <Link href="/Activity" className="text-white p-2 hover:bg-gray-700 rounded w-full">Activity</Link>
                         <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded w-full">Global Ranking</Link>
                     </>
                 )}
