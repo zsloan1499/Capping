@@ -1,0 +1,4 @@
+import PlaylistsPage from "../components/PlaylistPage"
+export default function Playlists() {
+    return <PlaylistsPage />
+}
