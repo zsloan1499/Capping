@@ -1,7 +1,7 @@
 // api/playlistSongs/route.js
 import { connectMongoDB } from "/lib/mongodb";
-import Playlist from "/models/user"; 
-import Song from "/models/user"; 
+import Playlist from "/models/user";
+import Song from "/models/user";
 import { getSession } from "next-auth/react";
 
 export default async function handler(req, res) {
@@ -25,6 +25,7 @@ export default async function handler(req, res) {
       await playlist.save();  // Save the updated playlist
       res.status(200).json({ message: "Song added to playlist", playlist });
     } catch (error) {
+      console.error("Error adding song to playlist:", error);
       res.status(500).json({ error: "Failed to add song to playlist" });
     }
   } else {
@@ -32,3 +33,4 @@ export default async function handler(req, res) {
   }
 }
 
+  
