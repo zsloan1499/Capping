@@ -19,9 +19,20 @@ export default function RegisterForm() {
     const router = useRouter();
 
     // Special characters array for password validation
-    const specialCharacters = [".", "/", "<", "!", "@"];
+    const specialCharacters = [".", "/", "<", "!", "@", ">"];
     const numberArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
     const emailCheck = ["@gmail.com", "@outlook.com", "@outlook.edu", "@aol.com"];
+
+    // Sanitization function
+    const sanitizeInput = (input) => {
+        if (typeof input !== "string") return input;
+        return input
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
 
     // Email validation function
     const isValidEmail = (email) => {
@@ -66,11 +77,18 @@ export default function RegisterForm() {
             return;
         }
 
+        // Sanitize inputs before sending them to the backend
+        const sanitizedFName = sanitizeInput(fName);
+        const sanitizedLName = sanitizeInput(lName);
+        const sanitizedEmail = sanitizeInput(email);
+        const sanitizedUsername = sanitizeInput(username);
+        const sanitizedPassword = sanitizeInput(password);
+
         try {
             const resUserExists = await fetch('api/userExists', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, username }),
+                body: JSON.stringify({ email: sanitizedEmail, username: sanitizedUsername }),
             });
 
             const { emailExists, usernameExists, user } = await resUserExists.json();
@@ -93,7 +111,7 @@ export default function RegisterForm() {
             const res = await fetch('api/register', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ fName, lName, username, email, password, retypepassword }),
+                body: JSON.stringify({ fName: sanitizedFName, lName: sanitizedLName, username: sanitizedUsername, email: sanitizedEmail, password: sanitizedPassword }),
             });
 
             if (res.ok) {
@@ -123,7 +141,7 @@ export default function RegisterForm() {
                         <input onChange={e => setRetypePassword(e.target.value)} type="password" placeholder="Retype Password" className="border border-gray-300 rounded p-2 w-full m-2 bg-customBlue2 text-white" />
                         <button type="submit" className="bg-green-500 text-white w-full p-2 rounded m-2 font-bold cursor-pointer">Register</button>
                     </form>
-                    {error && <div className="bg-red-500 text-white text-sm m-2 w-full p-2 rounded">{error}</div>}
+                    {error && <div className="bg-red-500 text-white text-sm m-2 w-full p-2 rounded">{sanitizeInput(error)}</div>}
                     <Link className="text-sm text-white m-2" href={'/'}>Already have an account? <span className="underline">Login</span></Link>
                 </div>
             </div>
