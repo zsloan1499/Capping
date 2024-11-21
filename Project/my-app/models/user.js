@@ -41,11 +41,12 @@ const reviewSchema = new Schema({
         type: String,
         required: true,
     },
-    likes: {
-        type: Number,
-        default: 0,
-    },
-    likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: [] // Ensure it defaults to an empty array
+    }],
+    
     rating: {
         type: Number,
         default: 0,

@@ -25,7 +25,7 @@ export default function UserInfo() {
     const [profilePhoto, setprofilePhoto] = useState('');
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [likedReviews, setLikedReviews] = useState({});
+    const [likedReviews, setLikedReviews] = useState({}); 
 
 
     // Get the username from session on mount
@@ -145,10 +145,11 @@ export default function UserInfo() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId: session.user.id }),
                     });
-
+    
                     const data = await response.json();
+                    console.log("Fetched reviews:", data.reviews); // Check the structure of the response
                     if (response.ok) {
-                        setReviews(data.reviews || []);
+                        setReviews(data.reviews || []);  // Store the reviews including reviewId
                     } else {
                         setError('Failed to load reviews');
                     }
@@ -157,10 +158,11 @@ export default function UserInfo() {
                     setError('Error fetching reviews');
                 }
             };
-
+    
             fetchReviews();
         }
     }, [session?.user?.id]);
+    
 
 
 
@@ -529,54 +531,43 @@ export default function UserInfo() {
         }
     };
 
-    const handleLike = async (reviewId) => {
+    const deleteReview = async (reviewId) => {
+        console.log('Attempting to delete review with ID:', reviewId); // Log reviewId
+    
+        if (!reviewId) {
+            console.error('Invalid reviewId:', reviewId);
+            return;
+        }
+    
         try {
-            // Ensure the reviewId and session user ID are valid
-            if (!reviewId || !session.user.id) {
-                console.error('Invalid reviewId or userId:', reviewId, session.user.id);
-                return;
-            }
-    
-            // Log reviewId and userId for debugging
-            console.log('Review ID:', reviewId);
-            console.log('User ID:', session.user.id);
-    
-            // Send like request to the backend
-            const response = await fetch('/api/addLike', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await fetch('/api/deleteReview', {
+                method: 'DELETE', // Ensure DELETE method is used
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
-                    reviewId,  // Send review ID
-                    userId: session.user.id,  // Send user ID
+                    reviewId: reviewId,  // Pass the reviewId
+                    userId: session.user.id, // Ensure session.user.id is valid
                 }),
             });
     
             const data = await response.json();
-    
             if (response.ok) {
-                // Optionally, update UI if you want to reflect changes in frontend state (e.g., likes count)
-                setLikedReviews(prevState => ({
-                    ...prevState,
-                    [reviewId]: !prevState[reviewId], // Toggle like status for the current review
-                }));
-    
-                // Update the review's like count with the new data from the backend
-                setReviews(prevReviews =>
-                    prevReviews.map(review =>
-                        review._id === reviewId
-                            ? { ...review, likes: data.likes }  // Update likes from backend
-                            : review
-                    )
-                );
+                console.log('Review deleted successfully:', data.message);
+                setReviews((prevReviews) => prevReviews.filter((review) => review.id !== reviewId));  // Remove review from local state
             } else {
-                setError(data.error || 'Failed to like the review');
+                console.error('Failed to delete review:', data.error);
             }
-        } catch (err) {
-            console.error("Error liking review:", err);
-            setError('Error liking review');
+        } catch (error) {
+            console.error('Error deleting review:', error);
         }
     };
     
+    
+    
+      
+
+
     
 
 
@@ -790,31 +781,47 @@ export default function UserInfo() {
                 <div className="mt-8 px-8 w-full">
             <h2 className="text-2xl text-white mb-6">{`Reviews (${reviews.length})`}</h2>
             <div className="space-y-8">
-            {reviews.map((review) => (
-    <div key={review._id} className="bg-opacity-50 bg-gray-800 text-white p-6 rounded-lg">
-        <div className="flex justify-between items-start mb-2">
-            <div>
-                <p className="text-lg font-semibold">{review.username}</p>
-                <p className="text-md italic">{review.songName} by <span className="font-bold">{review.songArtist}</span></p>
-            </div>
-            <p className="text-lg font-semibold text-right">Rating: {review.rating}</p>
+            {reviews.map((review) => {
+  console.log("Review object", review);  // Log the review object itself
+  return (
+    <div key={review.id || 'missing-id'} className="bg-opacity-50 bg-gray-800 text-white p-6 rounded-lg">
+      <div className="flex justify-between items-start mb-2">
+        <div>
+          <p className="text-lg font-semibold">{review.username}</p>
+          <p className="text-md italic">{review.songName} by <span className="font-bold">{review.songArtist}</span></p>
+        </div>
+        <p className="text-lg font-semibold text-right">Rating: {review.rating}</p>
+      </div>
+
+      <p className="text-lg mt-4">{review.reviewText}</p>
+
+      {/* Like and Delete Buttons Section */}
+      <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center">
+          <FaThumbsUp />
+          <span className="ml-5">{review.likes || 0}</span>
         </div>
 
-        <p className="text-lg mt-4">{review.reviewText}</p>
-
-        {/* Like Button */}
-        <div className="flex items-center mt-4">
-            <button
-                onClick={() => handleLike(review._id)} // Pass review._id directly to handleLike
-                className={`flex items-center space-x-2 text-white py-2 px-4 rounded hover:bg-blue-600 ${likedReviews[review._id] ? 'bg-blue-500' : 'bg-gray-500'}`}
-            >
-                <FaThumbsUp />
-                {/* Ensure likes has a fallback */}
-                <span>{review.likes || 0}</span>
-            </button>
-        </div>
+        {/* Delete Review Button */}
+        <button
+          onClick={() => {
+            console.log("Review ID on Delete button click:", review.id);  // Log ID here as well
+            if (review.id) {
+              deleteReview(review.id);  // Ensure review.id is passed to deleteReview
+            } else {
+              console.error('Review ID is missing');
+            }
+          }}
+          className="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full text-sm"
+        >
+          Delete
+        </button>
+      </div>
     </div>
-))}
+  );
+})}
+
+
 
 
                     </div>

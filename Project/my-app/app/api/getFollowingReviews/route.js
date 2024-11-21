@@ -33,7 +33,7 @@ export async function POST(req) {
             const userReviews = await Review.find({ user: followingId }) // Find reviews for this user
                 .populate("song", "name artist") // Populate song data
                 .populate("user", "username")   // Populate user data
-                .select("reviewText rating song user likes likedBy createdAt") // Select necessary fields
+                .select("_id reviewText rating song user likes likedBy createdAt") // Select necessary fields
                 .sort({ createdAt: -1 }); // Sort by newest first
 
             // Add reviews to the allReviews list
@@ -49,6 +49,7 @@ export async function POST(req) {
 
         // Format the reviews for the response
         const formattedReviews = allReviews.map(review => ({
+            id: review._id, // Include the review's ID
             reviewText: review.reviewText,
             rating: review.rating,
             songName: review.song.name,

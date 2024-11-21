@@ -1,52 +1,49 @@
 import { connectMongoDB } from "/lib/mongodb";
 import { Review } from "/models/User";
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 export async function POST(req) {
-    try {
-        await connectMongoDB();
+  try {
+    await connectMongoDB();
 
-        const { reviewId, userId } = await req.json();
-
-        // Validate input
-        if (!reviewId) {
-            return NextResponse.json({ error: "Invalid review" }, { status: 400 });
-        }
-
-        if (!userId) {
-            return NextResponse.json({ error: "Invalid user" }, { status: 400 });
-        }
-
-        // Find the review using the find() method (instead of findById)
-        const review = await Review.find({ _id: reviewId });
-
-        // If no review found
-        if (!review || review.length === 0) {
-            return NextResponse.json({ error: "Review not found" }, { status: 404 });
-        }
-
-        // Check if user has already liked the review
-        const userHasLiked = review[0].likedBy.includes(userId);
-
-        if (userHasLiked) {
-            // Remove the like
-            review[0].likes -= 1;
-            review[0].likedBy = review[0].likedBy.filter(id => id.toString() !== userId);
-            console.log('User has unliked the review. Updated likes:', review[0].likes);
-        } else {
-            // Add the like
-            review[0].likes += 1;
-            review[0].likedBy.push(userId);
-            console.log('User liked the review. Updated likes:', review[0].likes);
-        }
-
-        // Save the updated review to the database
-        await review[0].save();
-
-        // Return the updated like count
-        return NextResponse.json({ likes: review[0].likes });
-    } catch (error) {
-        console.error("Error processing like:", error);
-        return NextResponse.json({ error: "An error occurred while updating like status" }, { status: 500 });
+    const { reviewId, userId } = await req.json();
+    if (!reviewId || !userId) {
+      return NextResponse.json({ error: "Review ID and User ID are required" }, { status: 400 });
     }
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const review = await Review.findById(reviewId).populate("likes", "_id");
+
+    if (!review) {
+      return NextResponse.json({ error: "Review not found" }, { status: 404 });
+    }
+
+    // Ensure `likes` is always an array
+    review.likes = review.likes || [];
+
+    // Check if the user has already liked the review
+    const userHasLiked = review.likes.some((like) => like.equals(userObjectId));
+
+    if (userHasLiked) {
+      // If the user has already liked, remove the like
+      review.likes = review.likes.filter((like) => !like.equals(userObjectId));
+      await review.save();
+      return NextResponse.json({
+        message: "Review unliked successfully",
+        likesCount: review.likes.length,
+      });
+    } else {
+      // If the user hasn't liked, add the like
+      review.likes.push(userObjectId);
+      await review.save();
+      return NextResponse.json({
+        message: "Review liked successfully",
+        likesCount: review.likes.length,
+      });
+    }
+  } catch (error) {
+    console.error("Error toggling like:", error);
+    return NextResponse.json({ error: "An error occurred while toggling the like" }, { status: 500 });
+  }
 }

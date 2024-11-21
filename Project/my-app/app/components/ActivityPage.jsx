@@ -4,6 +4,7 @@ import { BellIcon, CogIcon } from '@heroicons/react/24/solid'; // Import icons
 import { useState, useEffect } from 'react'; // Import useState and useEffect
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
+import { FaThumbsUp } from 'react-icons/fa';
 
 export default function ActivityPage() {
   const { data: session } = useSession();
@@ -47,6 +48,44 @@ export default function ActivityPage() {
       setLoading(false);
     }
   };
+
+  async function handleLike(reviewId) {
+    try {
+      const response = await fetch("/api/addLike", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: session.user.id, reviewId }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        console.log(data.message);
+  
+        // Update the like count in the local state
+        setReviews((prevReviews) =>
+          prevReviews.map((review) =>
+            review.id === reviewId
+              ? {
+                  ...review,
+                  likes: Array.isArray(review.likes)
+                    ? data.message.includes("unliked")
+                      ? review.likes.filter((id) => id !== session.user.id)
+                      : [...review.likes, session.user.id]
+                    : review.likes + (data.message.includes("unliked") ? -1 : 1),
+                }
+              : review
+          )
+        );
+      } else {
+        console.error(data.error || "Failed to toggle like.");
+      }
+    } catch (err) {
+      console.error("Error while toggling like:", err);
+    }
+  }
+  
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
@@ -130,12 +169,24 @@ export default function ActivityPage() {
                   <p><strong>Rating:</strong> {review.rating}</p>
                   <p><strong>Song:</strong> {review.songName} by {review.songArtist}</p>
                   <p><strong>User:</strong> {review.username}</p>
+
+                  {/* Likes section */}
+                  <div className="flex items-center mt-4">
+                    <button
+                      onClick={() => handleLike(review.id)}
+                      className="flex items-center gap-2 bg-gray-800 p-2 rounded hover:bg-gray-700"
+                    >
+                      <FaThumbsUp className="text-white" />
+                      <span>{Array.isArray(review.likes) ? review.likes.length : review.likes}</span>
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (
               <p className="text-gray-300">No reviews found from users you follow.</p>
             )
           )}
+
           {activeTab === 'Suggested' && (
             <p className="text-gray-300">Suggested content goes here...</p>
           )}
