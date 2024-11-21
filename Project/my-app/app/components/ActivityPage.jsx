@@ -165,10 +165,15 @@ export default function ActivityPage() {
             reviews.length > 0 ? (
               reviews.map((review, index) => (
                 <div key={index} className="bg-gray-900 p-3 mb-4 rounded text-white">
-                  <p><strong>Review:</strong> {review.reviewText}</p>
-                  <p><strong>Rating:</strong> {review.rating}</p>
-                  <p><strong>Song:</strong> {review.songName} by {review.songArtist}</p>
-                  <p><strong>User:</strong> {review.username}</p>
+                 <p>
+                  <strong>User:</strong>{' '}
+                  <Link href={`/FriendInfo?username=${review.username}`} className="hover:underline">
+                   {review.username}
+                  </Link>
+                 </p>
+                 <p><strong>Song:</strong> {review.songName} by {review.songArtist}</p>
+                 <p><strong>Rating:</strong> {review.rating}</p>
+                 <p><strong>Review:</strong> {review.reviewText}</p>
 
                   {/* Likes section */}
                   <div className="flex items-center mt-4">
