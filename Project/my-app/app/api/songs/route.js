@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
   await connectMongoDB();
 
-  if (req.method === 'GET') {
+  if (req.method === 'GET') { 
     try {
       // Fetch all songs from the Song model
       const songs = await Song.find(); 
