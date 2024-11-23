@@ -229,6 +229,7 @@ export default function HomePage() {
           </div>
         </div>
   
+  {/*can delete this part if not using search on homepage */}
         <div className="mt-8">
           <h2 className="text-white text-2xl">Spotify Search</h2>
             <input
@@ -255,6 +256,7 @@ export default function HomePage() {
               </div>
             )}
         </div>
+        {/*can delete this part if not using search on homepage */}
 
         {/* Carousel Section - Recently Played Songs */}
 <div style={carouselContainerStyle} className="w-full mt-8">

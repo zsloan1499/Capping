@@ -1,252 +1,285 @@
 'use client';
-import { BellIcon, CogIcon } from '@heroicons/react/24/solid';
+
+import Head from 'next/head'; // Import Head from next/head
 import { useEffect, useState } from 'react';
+import { useSession, signIn } from 'next-auth/react'; // Import session handling
 import Link from 'next/link';
-import { useSession } from "next-auth/react";
 import Carousel from 'react-multi-carousel';
 import "react-multi-carousel/lib/styles.css";
+import { BellIcon, CogIcon } from '@heroicons/react/24/solid';
 
-export default function PlaylistsPage() {
-  const { data: session } = useSession();
-  const [isNavOpen, setIsNavOpen] = useState(false);
+export default function SpotifyPlaylists() {
+  const { data: session } = useSession(); // Access the user session
   const [playlists, setPlaylists] = useState([]);
-  const [songs, setSongs] = useState([]);
-  const [selectedSong, setSelectedSong] = useState(null);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const [playlistTracks, setPlaylistTracks] = useState([]);
   const [playlistsMessage, setPlaylistsMessage] = useState('');
-
-  const carouselContainerStyle = {
-    width: '80vw',
-    overflow: 'hidden',
-    margin: '0 auto',
-  };
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const [player, setPlayer] = useState(null);  // Spotify player instance
+  const [isPlaying, setIsPlaying] = useState(false); // Playback state
 
   const toggleNav = () => setIsNavOpen(!isNavOpen);
 
-  // Fetch playlists and songs from API
   useEffect(() => {
-    if (session) {
-      const fetchData = async () => {
-        try {
-          // Fetch playlists
-          const playlistResponse = await fetch(`/api/playlists`);
-          if (playlistResponse.ok) {
-            const playlistsData = await playlistResponse.json();
-            setPlaylists(playlistsData.playlists);
-          }
-
-          // Fetch songs
-          const songResponse = await fetch('/api/songs');
-          if (songResponse.ok) {
-            const songsData = await songResponse.json();
-            setSongs(songsData);
-          }
-        } catch (error) {
-          console.error("Error fetching playlists or songs:", error);
-          setPlaylistsMessage("Error fetching playlists.");
+    const fetchUserPlaylists = async () => {
+      try {
+        const accessToken = sessionStorage.getItem('spotifyAccessToken');
+        if (!accessToken) {
+          setPlaylistsMessage('Please log in with Spotify to view your playlists.');
+          return;
         }
-      };
 
-      fetchData();
-    }
-  }, [session]); // Run when session changes
+        const response = await fetch('/api/getUserPlaylists', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
 
-  // Handle adding song to playlist
-  const handleAddSongToPlaylist = async () => {
-    if (!selectedSong || !selectedPlaylist) {
-      console.error("Please select both a song and a playlist.");
-      return;
-    }
+        if (response.ok) {
+          const data = await response.json();
+          setPlaylists(data);
+        } else {
+          const errorData = await response.json();
+          setPlaylistsMessage(`Failed to fetch playlists: ${errorData.error}`);
+        }
+      } catch (error) {
+        setPlaylistsMessage('An error occurred while fetching playlists.');
+      }
+    };
 
+    fetchUserPlaylists();
+  }, [session]);
+
+  const fetchPlaylistTracks = async (playlistId) => {
     try {
-      const response = await fetch('/api/playlistSongs', {
+      const accessToken = sessionStorage.getItem('spotifyAccessToken');
+      if (!accessToken) {
+        setPlaylistsMessage('Please log in with Spotify to view tracks.');
+        return;
+      }
+
+      const response = await fetch('/api/getPlaylistTracks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          playlistId: selectedPlaylist,
-          songId: selectedSong,
-        }),
+        body: JSON.stringify({ playlistId }),
       });
 
-      const data = await response.json();
-      if (data.error) {
-        console.error(data.error);
+      const result = await response.json();
+
+      if (response.ok) {
+        setPlaylistTracks(result);
+        setSelectedPlaylist(playlistId);
       } else {
-        console.log('Song added to playlist');
-        setSelectedSong(null);
-        setSelectedPlaylist(null);
+        setPlaylistsMessage(`Failed to fetch tracks: ${result.error}`);
       }
     } catch (error) {
-      console.error("Error adding song to playlist:", error);
+      setPlaylistsMessage('An error occurred while fetching tracks.');
+    }
+  };
+
+  const playTrack = (trackUri) => {
+    if (player) {
+      player.play({
+        uris: [trackUri],
+      });
+      setIsPlaying(true);
     }
   };
 
   const responsive = {
-    superLarge: {
-      breakpoint: { max: 4000, min: 1024 },
-      items: 5,
-    },
-    large: {
-      breakpoint: { max: 1024, min: 768 },
-      items: 4,
-    },
-    medium: {
-      breakpoint: { max: 768, min: 480 },
-      items: 3,
-    },
-    small: {
-      breakpoint: { max: 480, min: 0 },
-      items: 2,
-    },
+    superLarge: { breakpoint: { max: 4000, min: 1024 }, items: 5 },
+    large: { breakpoint: { max: 1024, min: 768 }, items: 4 },
+    medium: { breakpoint: { max: 768, min: 480 }, items: 3 },
+    small: { breakpoint: { max: 480, min: 0 }, items: 2 },
   };
 
+  useEffect(() => {
+    if (window.Spotify) {
+      const accessToken = sessionStorage.getItem('spotifyAccessToken');
+      if (!accessToken) {
+        console.error("No Spotify Access Token found");
+        return;
+      }
+
+      const newPlayer = new window.Spotify.Player({
+        name: 'Melodi Player',
+        getOAuthToken: (cb) => cb(accessToken),
+        volume: 0.5,
+      });
+
+      newPlayer.addListener('ready', ({ device_id }) => {
+        console.log('Spotify Player ready with device ID', device_id);
+      });
+
+      newPlayer.addListener('player_state_changed', (state) => {
+        if (state && state.paused) {
+          setIsPlaying(false);
+        } else if (state) {
+          setIsPlaying(true);
+        }
+      });
+
+      newPlayer.addListener('not_ready', ({ device_id }) => {
+        console.error('Device not ready: ', device_id);
+      });
+
+      newPlayer.connect();
+
+      setPlayer(newPlayer);
+    }
+  }, []);
+
   return (
-    <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
-      {/* Sidebar Navigation */}
-      <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-auto p-4 flex flex-col space-y-4 transition-width duration-300`}>
-        <button
-            className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
-            onClick={toggleNav}
-        >
-            {isNavOpen ? 'Close' : 'Open'}
-        </button>
+    <div className="bg-customBlue w-screen h-screen flex flex-col">
+      {/* Add the SDK script */}
+      <Head>
+        <script type="text/javascript" src="https://sdk.scdn.co/spotify-player.js"></script>
+      </Head>
 
-        {isNavOpen && (
-          <>
-          <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
-          <Link href="/Playlists" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
-          <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
-          <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
-          <Link href="/Activity" className="text-white p-2 hover:bg-gray-700 rounded w-full">Activity</Link>
-          <Link href="/placeholder3" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
-        </>
-        )}
-    </nav>
-
-      {/* Main Content Area */}
-      <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>
-        <title>Melodi - Your Playlists</title>
-        <div className="flex items-center justify-between">
-          <h1 className="text-white text-3xl font-bold">Your Playlists</h1>
-          <div className="flex items-center space-x-4">
+      {/* Main Header */}
+      <div className="p-4 bg-black text-white flex items-center justify-between shadow-md z-50">
+        <h1 className="text-3xl font-bold">Melodi</h1>
+        <div className="flex items-center space-x-4">
+          {/* Profile Photo */}
+          {session?.user ? (
             <Link href="/UserInfo">
               <img
-                src={session?.user?.profilePhoto || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"}
+                src={session.user.profilePhoto || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"}
                 alt="User Profile Photo"
-                className="w-6 h-6"
+                className="w-10 h-10 rounded-full"
               />
             </Link>
-            <button className="text-white relative">
-              <BellIcon className="w-6 h-6" />
+          ) : (
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+              onClick={() => signIn('spotify')}
+            >
+              Sign In
             </button>
-            <button className="text-white">
-              <CogIcon className="w-6 h-6" />
-            </button>
-          </div>
+          )}
+          {/* Notification Bell Icon */}
+          <button className="text-white relative">
+            <BellIcon className="w-6 h-6" />
+            <span className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+              3
+            </span>
+          </button>
+          {/* Settings Icon */}
+          <button className="text-white">
+            <CogIcon className="w-6 h-6" />
+          </button>
         </div>
+      </div>
 
-        <div className="mt-8">
-          <h2 className="text-white text-2xl">Your Playlists</h2>
-          
-          {/* Carousel Section - Your Playlists */}
-          <div style={carouselContainerStyle} className="w-full mt-8">
-            {playlistsMessage && <p className="text-red-500">{playlistsMessage}</p>}
+      {/* Content Wrapper */}
+      <div className="flex flex-grow overflow-hidden">
+        {/* Sidebar Navigation */}
+        <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-full p-4 flex flex-col space-y-4 transition-width duration-300`}>
+          <button
+            className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
+            onClick={toggleNav}
+          >
+            {isNavOpen ? 'Close' : 'Open'}
+          </button>
+          {isNavOpen && (
+            <>
+              <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
+              <Link href="/Playlists" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
+              <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
+              <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
+              <Link href="/Activity" className="text-white p-2 hover:bg-gray-700 rounded">Activity</Link>
+              <Link href="/placeholder3" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
+            </>
+          )}
+        </nav>
 
-            {playlists.length > 0 ? (
+        {/* Main Content */}
+        <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>
+          <h1 className="text-white text-3xl font-bold mb-6">Your Spotify Playlists</h1>
+          {playlistsMessage ? (
+            <p className="text-red-500">{playlistsMessage}</p>
+          ) : playlists.length > 0 ? (
+            <div className="w-full max-w-6xl mx-auto">
               <Carousel responsive={responsive} arrows={true}>
                 {playlists.map((playlist, index) => {
-                  const playlistImageUrl =
-                    playlist.images && playlist.images.length > 0 ? playlist.images[0].url : null;
+                  const playlistImageUrl = playlist.images?.[0]?.url;
 
                   return (
-                    <div
+                    <button
                       key={index}
-                      className="carousel-item flex flex-col items-center p-2"
-                      style={{
-                        backgroundColor: 'white',
-                        boxSizing: 'border-box',
-                        minHeight: '220px',
-                      }}
+                      onClick={() => fetchPlaylistTracks(playlist.id)}
+                      className="flex flex-col items-center p-4 bg-white rounded-md hover:shadow-lg transition-shadow duration-200"
                     >
                       {playlistImageUrl && (
                         <img
                           src={playlistImageUrl}
                           alt={`Cover art for ${playlist.name}`}
-                          style={{
-                            width: '10rem',
-                            height: '10rem',
-                            objectFit: 'cover',
-                            marginBottom: '0.5rem',
-                            borderRadius: '8px',
-                          }}
+                          className="w-36 h-36 object-cover rounded-md mb-2"
                         />
                       )}
-                      <div className="flex flex-col items-center">
-                        <p
-                          style={{
-                            color: 'black',
-                            textAlign: 'center',
-                            fontWeight: 'bold',
-                            margin: 0,
-                          }}
-                        >
-                          {playlist.name}
-                        </p>
-                        <p
-                          style={{
-                            color: 'black',
-                            textAlign: 'center',
-                            margin: 0,
-                          }}
-                        >
-                          {playlist.tracks.total} songs
-                        </p>
-                      </div>
-                    </div>
+                      <p className="text-black font-bold">{playlist.name}</p>
+                      <p className="text-black">{playlist.tracks.total} songs</p>
+                    </button>
                   );
                 })}
               </Carousel>
-            ) : (
-              <p className="text-white">Loading your playlists...</p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <p className="text-white">Loading your playlists...</p>
+          )}
 
-          {/* Add song to playlist */}
-          <div className="mt-8">
-            <h3 className="text-white text-xl">Add Song to Playlist</h3>
-            <select
-              onChange={(e) => setSelectedPlaylist(e.target.value)}
-              className="bg-gray-700 text-white p-2 rounded"
-            >
-              <option value="">Select Playlist</option>
-              {playlists.map((playlist) => (
-                <option key={playlist._id} value={playlist._id}>
-                  {playlist.name}
-                </option>
-              ))}
-            </select>
+          {/* Tracks Section */}
+          {selectedPlaylist && playlistTracks?.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-white text-2xl font-bold mb-4">Tracks</h2>
+              <div className="bg-black p-4 rounded-md max-h-[300px] overflow-y-auto">
+                <ul>
+                  {playlistTracks.map((track, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center text-white p-2 hover:bg-gray-700 rounded"
+                    >
+                      <button
+                        onClick={() => playTrack(track.track.uri)} // Play track on click
+                        className="flex items-center w-full"
+                      >
+                        {track.track?.album?.images[0]?.url && (
+                          <img
+                            src={track.track.album.images[0].url}
+                            alt={track.track.name}
+                            className="w-12 h-12 rounded mr-4"
+                          />
+                        )}
+                        <div>
+                          <p className="font-bold">{track.track?.name || 'Unknown Track'}</p>
+                          <p className="text-sm">
+                            {track.track?.artists?.map(artist => artist.name).join(', ') || 'Unknown Artist'}
+                          </p>
+                        </div>
+                      </button>
+                      {/* Review Button */}
+                      <div className="ml-auto">
+  <Link
+    href={{
+      pathname: '/Review',
+      query: { 
+        songName: track.track.name, 
+        artistName: track.track.artists.map(artist => artist.name).join(', '), // Join multiple artists
+        spotifyId: track.track.id 
+      },
+    }}
+  >
+    <button className="bg-blue-500 text-white px-4 py-2 rounded">Review</button>
+  </Link>
+</div>
 
-            <select
-              onChange={(e) => setSelectedSong(e.target.value)}
-              className="bg-gray-700 text-white p-2 rounded ml-4"
-            >
-              <option value="">Select Song</option>
-              {songs.map((song) => (
-                <option key={song._id} value={song._id}>
-                  {song.name}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={handleAddSongToPlaylist}
-              className="bg-blue-500 text-white p-2 rounded ml-4"
-            >
-              Add Song
-            </button>
-          </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

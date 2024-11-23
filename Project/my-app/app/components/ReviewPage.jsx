@@ -1,4 +1,5 @@
 'use client';
+
 import { BellIcon, CogIcon } from '@heroicons/react/24/solid';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -6,17 +7,24 @@ import { useSession } from "next-auth/react";
 import "react-multi-carousel/lib/styles.css";
 import { Editor, EditorState, RichUtils } from "draft-js";
 import "draft-js/dist/Draft.css";
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 
-export default function HomePage() {
+export default function ReviewPage() {
   const { data: session } = useSession();
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState('');
-  const [selectedSong, setSelectedSong] = useState(null); // Now stores the full song object
+  const [selectedSong, setSelectedSong] = useState(null); // Stores the full song object
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
   const [query, setQuery] = useState('');
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // For handling query parameters in the URL
+  const searchParams = useSearchParams();
+  const songNameFromURL = searchParams.get('songName');
+  const artistNameFromURL = searchParams.get('artistName');
+  const spotifyIdFromURL = searchParams.get('spotifyId'); 
 
   const customStyleMap = {
     WHITE_TEXT: {
@@ -68,6 +76,23 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    if (spotifyIdFromURL && songNameFromURL && artistNameFromURL) {
+      // If all parameters are found in the URL, set the full selected song object
+      setSelectedSong({
+        id: spotifyIdFromURL,
+        name: songNameFromURL,
+        artists: [{ name: artistNameFromURL }], // Ensure artists is an array
+      });
+    } else if (songNameFromURL && artistNameFromURL) {
+      // Fallback to using song name and artist name if Spotify ID is not available
+      setSelectedSong({
+        name: songNameFromURL,
+        artists: [{ name: artistNameFromURL }],
+      });
+    }
+  }, [songNameFromURL, artistNameFromURL, spotifyIdFromURL]);
+
+  useEffect(() => {
     const delayDebounce = setTimeout(() => {
       handleSearch(query);
       setShowDropdown(true);
@@ -103,17 +128,11 @@ export default function HomePage() {
       return;
     }
 
-    // Log and check the selected song format
     console.log("Selected song:", selectedSong);
 
-    // Directly use the song object selected, no need to split name and artist
     const songName = selectedSong.name;
-    const artist = selectedSong.artists[0].name; // Assuming the first artist is the main one
-
-    console.log("Song Name:", songName);
-    console.log("Artist:", artist);
-
-    const spotifyId = selectedSong.id; // Assuming 'id' is the Spotify ID
+    const artist = selectedSong.artists?.[0]?.name || "Unknown Artist";
+    const spotifyId = selectedSong.id;
 
     if (!spotifyId) {
       console.error("Selected song does not have a Spotify ID.");
@@ -130,23 +149,22 @@ export default function HomePage() {
           selectedNumber,
           reviewText,
           userId,
-          spotifyId, // Use the Spotify ID directly
+          spotifyId,
         }),
       });
 
       const data = await response.json();
       console.log("Submitted data:", data);
 
-      setSelectedSong(null);  // Reset the selected song
-      setSelectedNumber(''); // Reset the rating
-      setEditorState(EditorState.createEmpty()); // Reset the review text editor
+      setSelectedSong(null);
+      setSelectedNumber('');
+      setEditorState(EditorState.createEmpty());
     } catch (error) {
       console.error("Error submitting review:", error);
     }
   };
 
   const handleSelectSong = (song) => {
-    // Store the entire song object, including name, artist, and spotifyId
     setSelectedSong(song);
     setQuery('');
     setShowDropdown(false);
@@ -161,13 +179,13 @@ export default function HomePage() {
 
         {isNavOpen && (
           <>
-          <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
-          <Link href="/Playlists" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
-          <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
-          <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
-          <Link href="/Activity" className="text-white p-2 hover:bg-gray-700 rounded w-full">Activity</Link>
-          <Link href="/placeholder3" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
-        </>
+            <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
+            <Link href="/Playlists" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
+            <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
+            <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
+            <Link href="/Activity" className="text-white p-2 hover:bg-gray-700 rounded w-full">Activity</Link>
+            <Link href="/placeholder3" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
+          </>
         )}
       </nav>
 
@@ -205,7 +223,7 @@ export default function HomePage() {
               {results.tracks.items.map((track) => (
                 <li
                   key={track.id}
-                  onClick={() => handleSelectSong(track)} // Pass the full track object
+                  onClick={() => handleSelectSong(track)}
                   className="p-2 hover:bg-gray-200 cursor-pointer"
                 >
                   {track.name} by {track.artists[0].name}
@@ -220,7 +238,7 @@ export default function HomePage() {
             <label className="text-white">Selected Song:</label>
             <input
               type="text"
-              value={selectedSong ? `${selectedSong.name} - ${selectedSong.artists[0].name}` : ''}
+              value={selectedSong ? `${selectedSong.name} - ${selectedSong.artists?.[0]?.name}` : ''}
               readOnly
               className="ml-2 p-2 rounded bg-gray-900 text-white border border-gray-600 w-1/2"
             />
