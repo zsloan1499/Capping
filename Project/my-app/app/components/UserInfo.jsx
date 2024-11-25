@@ -612,7 +612,7 @@ export default function UserInfo() {
           <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
           <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
           <Link href="/Activity" className="text-white p-2 hover:bg-gray-700 rounded w-full">Activity</Link>
-          <Link href="/placeholder3" className="text-white p-2 hover:bg-gray-700 rounded">Global Ranking</Link>
+          <Link href="/Global" className="text-white p-2 hover:bg-gray-700 rounded">Global</Link>
         </>
                 )}
             </nav>
