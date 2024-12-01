@@ -11,18 +11,24 @@ export default function ActivityPage() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Following'); // Manage active tab state
   const [reviews, setReviews] = useState([]); // State for reviews
+  const [suggestedReviews, setSuggestedReviews] = useState([]); // State for suggested reviews
+  const [recentlyPlayedSongs, setRecentlyPlayedSongs] = useState([]); // Recently played songs
   const [loading, setLoading] = useState(false); // Loading state for API calls
   const [error, setError] = useState(''); // Error state for API calls
+  const [message, setMessage] = useState(''); // Status message
 
   const toggleNav = () => setIsNavOpen(!isNavOpen);
 
-  // Fetch reviews when "Following" is the active tab
+  // Fetch reviews when tabs change
   useEffect(() => {
     if (activeTab === 'Following') {
       fetchReviews();
+    } else if (activeTab === 'Suggested') {
+      fetchSuggestedReviews(); // Fetch suggested reviews when "Suggested" tab is active
     }
-  }, [activeTab]);
+  }, [activeTab]); // Watch for changes to the activeTab state
 
+  // Fetch reviews for "Following" tab
   const fetchReviews = async () => {
     if (!session || !session.user) return;
 
@@ -49,6 +55,82 @@ export default function ActivityPage() {
     }
   };
 
+  // Fetch recently played songs for suggested reviews
+  useEffect(() => {
+    const fetchRecentlyPlayed = async () => {
+      try {
+        const accessToken = sessionStorage.getItem('spotifyAccessToken');
+  
+        if (!accessToken) {
+          setMessage('Spotify access token not found. Please login with Spotify.');
+          return;
+        }
+  
+        const response = await fetch('/api/getRecentlyPlayedSongsReviews', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+  
+          // Log the full data first to see the structure
+          console.log("Recently Played Songs with Genres:", data);
+  
+          // Process the data to display genres
+          setRecentlyPlayedSongs(data.slice(0, 9)); // Get the last 9 songs
+        } else {
+          const errorData = await response.json();
+          setMessage(`Failed to fetch recently played songs: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error('Error fetching recently played songs:', error);
+        setMessage('An error occurred while fetching recently played songs.');
+      }
+    };
+  
+    fetchRecentlyPlayed();
+  }, []);
+  
+  // Fetch reviews for "Suggested" tab based on recently played songs
+  const fetchSuggestedReviews = async () => {
+    if (!session || recentlyPlayedSongs.length === 0) return;
+  
+    setLoading(true);
+    setError('');
+    try {
+      // Extract and flatten genres from each song
+      const genres = recentlyPlayedSongs.flatMap(song => song.genres || []); // Ensure we only grab the genres
+  
+      // If genres is empty, we should return early to avoid errors
+      if (genres.length === 0) {
+        setError('No genres found in recently played songs.');
+        setLoading(false);
+        return;
+      }
+  
+      const response = await fetch('/api/getSuggestedReviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ genres }), // Send only the genres array
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        setSuggestedReviews(data.reviews || []);
+      } else {
+        setError(data.error || 'Failed to fetch suggested reviews.');
+      }
+    } catch (err) {
+      setError('No reviews found.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
   async function handleLike(reviewId) {
     try {
       const response = await fetch("/api/addLike", {
@@ -58,14 +140,14 @@ export default function ActivityPage() {
         },
         body: JSON.stringify({ userId: session.user.id, reviewId }),
       });
-  
+
       const data = await response.json();
       if (response.ok) {
         console.log(data.message);
-  
-        // Update the like count in the local state
-        setReviews((prevReviews) =>
-          prevReviews.map((review) =>
+
+        // Update the like count in the local state for both tabs
+        const updateReviewLikes = (reviewsList) => 
+          reviewsList.map((review) =>
             review.id === reviewId
               ? {
                   ...review,
@@ -76,8 +158,10 @@ export default function ActivityPage() {
                     : review.likes + (data.message.includes("unliked") ? -1 : 1),
                 }
               : review
-          )
-        );
+          );
+
+        setReviews((prevReviews) => updateReviewLikes(prevReviews));
+        setSuggestedReviews((prevReviews) => updateReviewLikes(prevReviews));
       } else {
         console.error(data.error || "Failed to toggle like.");
       }
@@ -85,7 +169,6 @@ export default function ActivityPage() {
       console.error("Error while toggling like:", err);
     }
   }
-  
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
@@ -149,11 +232,15 @@ export default function ActivityPage() {
             Following
           </button>
           <button
-            onClick={() => setActiveTab('Suggested')}
+            onClick={() => {
+              setActiveTab('Suggested');
+              fetchSuggestedReviews(); // Call the function directly when switching to "Suggested"
+            }}
             className={`p-2 px-6 rounded ${activeTab === 'Suggested' ? 'bg-customBlue2 text-white' : 'bg-gray-700 text-gray-300'}`}
           >
             Suggested
           </button>
+
         </div>
 
         {/* Content Section */}
@@ -164,26 +251,17 @@ export default function ActivityPage() {
             reviews.length > 0 ? (
               reviews.map((review, index) => (
                 <div key={index} className="bg-gray-900 p-3 mb-4 rounded text-white">
-                 <p>
-                  <strong>User:</strong>{' '}
-                  <Link href={`/FriendInfo?username=${review.username}`} className="hover:underline">
-                   {review.username}
-                  </Link>
-                 </p>
-                 <p><strong>Song:</strong> {review.songName} by {review.songArtist}</p>
-                 <p><strong>Rating:</strong> {review.rating}</p>
-                 <p><strong>Review:</strong> {review.reviewText}</p>
-
-                  {/* Likes section */}
-                  <div className="flex items-center mt-4">
-                    <button
-                      onClick={() => handleLike(review.id)}
-                      className="flex items-center gap-2 bg-gray-800 p-2 rounded hover:bg-gray-700"
-                    >
-                      <FaThumbsUp className="text-white" />
-                      <span>{Array.isArray(review.likes) ? review.likes.length : review.likes}</span>
-                    </button>
-                  </div>
+                  <p><strong>User:</strong> {review.username}</p>
+                  <p><strong>Song:</strong> {review.songName} by {review.songArtist}</p>
+                  <p><strong>Rating:</strong> {review.rating}</p>
+                  <p><strong>Review:</strong> {review.reviewText}</p>
+                  <button
+                    onClick={() => handleLike(review.id)}
+                    className="flex items-center gap-2 bg-gray-800 p-2 rounded hover:bg-gray-700 mt-4"
+                  >
+                    <FaThumbsUp className="text-white" />
+                    <span>{Array.isArray(review.likes) ? review.likes.length : review.likes}</span>
+                  </button>
                 </div>
               ))
             ) : (
@@ -191,8 +269,26 @@ export default function ActivityPage() {
             )
           )}
 
-          {activeTab === 'Suggested' && (
-            <p className="text-gray-300">Suggested content goes here...</p>
+          {!loading && !error && activeTab === 'Suggested' && (
+            suggestedReviews.length > 0 ? (
+              suggestedReviews.map((review, index) => (
+                <div key={index} className="bg-gray-900 p-3 mb-4 rounded text-white">
+                  <p><strong>User:</strong> {review.username}</p>
+                  <p><strong>Song:</strong> {review.songName} by {review.songArtist}</p>
+                  <p><strong>Rating:</strong> {review.rating}</p>
+                  <p><strong>Review:</strong> {review.reviewText}</p>
+                  <button
+                    onClick={() => handleLike(review.id)}
+                    className="flex items-center gap-2 bg-gray-800 p-2 rounded hover:bg-gray-700 mt-4"
+                  >
+                    <FaThumbsUp className="text-white" />
+                    <span>{Array.isArray(review.likes) ? review.likes.length : review.likes}</span>
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-300">No suggested reviews found. Try exploring more music.</p>
+            )
           )}
         </div>
       </div>

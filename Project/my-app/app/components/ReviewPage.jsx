@@ -7,24 +7,23 @@ import { useSession } from "next-auth/react";
 import "react-multi-carousel/lib/styles.css";
 import { Editor, EditorState, RichUtils } from "draft-js";
 import "draft-js/dist/Draft.css";
-import { useSearchParams } from 'next/navigation'; // Import useSearchParams
+import { useSearchParams } from 'next/navigation';
 
 export default function ReviewPage() {
   const { data: session } = useSession();
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState('');
-  const [selectedSong, setSelectedSong] = useState(null); // Stores the full song object
+  const [selectedSong, setSelectedSong] = useState(null);
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
   const [query, setQuery] = useState('');
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // For handling query parameters in the URL
   const searchParams = useSearchParams();
   const songNameFromURL = searchParams.get('songName');
   const artistNameFromURL = searchParams.get('artistName');
-  const spotifyIdFromURL = searchParams.get('spotifyId'); 
+  const spotifyIdFromURL = searchParams.get('spotifyId');
 
   const customStyleMap = {
     WHITE_TEXT: {
@@ -77,14 +76,12 @@ export default function ReviewPage() {
 
   useEffect(() => {
     if (spotifyIdFromURL && songNameFromURL && artistNameFromURL) {
-      // If all parameters are found in the URL, set the full selected song object
       setSelectedSong({
         id: spotifyIdFromURL,
         name: songNameFromURL,
-        artists: [{ name: artistNameFromURL }], // Ensure artists is an array
+        artists: [{ name: artistNameFromURL }],
       });
     } else if (songNameFromURL && artistNameFromURL) {
-      // Fallback to using song name and artist name if Spotify ID is not available
       setSelectedSong({
         name: songNameFromURL,
         artists: [{ name: artistNameFromURL }],
@@ -96,7 +93,7 @@ export default function ReviewPage() {
     const delayDebounce = setTimeout(() => {
       handleSearch(query);
       setShowDropdown(true);
-    }, 300); // Adjust debounce delay as needed
+    }, 300);
 
     return () => clearTimeout(delayDebounce);
   }, [query]);
@@ -117,15 +114,24 @@ export default function ReviewPage() {
     return "not-handled";
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleSelectSong = (song) => {
+    setSelectedSong({
+        ...song,
+        genres: song.genres || [],  // Ensure genres are set
+    });
+    setQuery('');
+    setShowDropdown(false);
+};
+
+const handleFormSubmit = async (e) => {
     e.preventDefault();
 
     const reviewText = editorState.getCurrentContent().getPlainText();
     const userId = session?.user?.id;
 
     if (!selectedSong || !selectedNumber || !reviewText || !userId) {
-      console.error("All fields are required!");
-      return;
+        console.error("All fields are required!");
+        return;
     }
 
     console.log("Selected song:", selectedSong);
@@ -133,42 +139,38 @@ export default function ReviewPage() {
     const songName = selectedSong.name;
     const artist = selectedSong.artists?.[0]?.name || "Unknown Artist";
     const spotifyId = selectedSong.id;
+    const genres = selectedSong.genres || []; // Add genres
 
     if (!spotifyId) {
-      console.error("Selected song does not have a Spotify ID.");
-      return;
+        console.error("Selected song does not have a Spotify ID.");
+        return;
     }
 
     try {
-      const response = await fetch('/api/addReview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          songName,
-          artist,
-          selectedNumber,
-          reviewText,
-          userId,
-          spotifyId,
-        }),
-      });
+        const response = await fetch('/api/addReview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                songName,
+                artist,
+                selectedNumber,
+                reviewText,
+                userId,
+                spotifyId,
+                genres,  // Send genres to backend
+            }),
+        });
 
-      const data = await response.json();
-      console.log("Submitted data:", data);
+        const data = await response.json();
+        console.log("Submitted data:", data);
 
-      setSelectedSong(null);
-      setSelectedNumber('');
-      setEditorState(EditorState.createEmpty());
+        setSelectedSong(null);
+        setSelectedNumber('');
+        setEditorState(EditorState.createEmpty());
     } catch (error) {
-      console.error("Error submitting review:", error);
+        console.error("Error submitting review:", error);
     }
-  };
-
-  const handleSelectSong = (song) => {
-    setSelectedSong(song);
-    setQuery('');
-    setShowDropdown(false);
-  };
+};
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">

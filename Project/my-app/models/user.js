@@ -21,6 +21,9 @@ const songSchema = new Schema({
         type: String, // URL for the custom image
         required: false, // Optional custom image
     },
+    genres: [{
+        type: String,
+      }],
 }, { timestamps: true });
 
 const Song = models.Song || mongoose.model("Song", songSchema);

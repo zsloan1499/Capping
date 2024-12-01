@@ -21,7 +21,23 @@ export async function POST(req) {
         }
 
         const data = await response.json();
-        return NextResponse.json(data);
+
+        // Enrich tracks with genre data from artists or albums
+        const tracksWithGenres = await Promise.all(data.tracks.items.map(async (track) => {
+            let genres = [];
+            if (track.artists && track.artists.length > 0) {
+                const artistResponse = await fetch(`https://api.spotify.com/v1/artists/${track.artists[0].id}`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                });
+                const artistData = await artistResponse.json();
+                genres = artistData.genres || []; // Fetch genres from the artist data
+            }
+            return { ...track, genres }; // Include the genres in the track object
+        }));
+
+        return NextResponse.json({ tracks: { items: tracksWithGenres } });
     } catch (error) {
         console.error("Error searching Spotify:", error);
         return NextResponse.json({ error: "Error searching Spotify" }, { status: 500 });
