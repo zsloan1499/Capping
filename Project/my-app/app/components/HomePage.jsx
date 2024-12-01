@@ -20,6 +20,14 @@ export default function HomePage() {
   const [playlistsMessage, setPlaylistsMessage] = useState('');
   const [topArtists, setTopArtists] = useState([]);
   const [artistsMessage, setArtistsMessage] = useState('');
+  const [recentlyPlayedAlbums, setRecentlyPlayedAlbums] = useState([]);
+  const [albumsMessage, setAlbumsMessage] = useState('');
+  const [recentlyListenedArtists, setRecentlyListenedArtists] = useState([]);
+
+
+  // Carousel item class with updated styles
+  const carouselItemClass =
+    'carousel-item flex flex-col items-center justify-center p-4 bg-[#F5FFFA] hover:bg-[#FFC0CB] min-h-[280px] hover:scale-125 transition transform duration-300';
 
   const itemStyle = {
     //width: '100%',  // Ensure each item takes up full width of the carousel container
@@ -43,19 +51,19 @@ export default function HomePage() {
   const responsive = {
     superLargeDesktop: {
       breakpoint: { max: 4000, min: 3000 },
-      items: 4
+      items: 6
     },
     desktop: {
       breakpoint: { max: 3000, min: 1024 },
-      items: 3
+      items: 5
     },
     tablet: {
       breakpoint: { max: 1024, min: 464 },
-      items: 2
+      items: 3
     },
     mobile: {
       breakpoint: { max: 464, min: 0 },
-      items: 1
+      items: 2
     }
   };
 
@@ -178,6 +186,39 @@ export default function HomePage() {
     fetchTopArtists();
   }, []);
 
+  //useEffect hook to fetch users recent listened to albums 
+  useEffect(() => {
+    const fetchRecentlyPlayedAlbums = async () => {
+      try {
+        const accessToken = sessionStorage.getItem('spotifyAccessToken');
+  
+        if (!accessToken) {
+          setAlbumsMessage('Please log in with Spotify to view your recently played albums.');
+          return;
+        }
+  
+        const response = await fetch('/api/getRecentlyPlayedAlbums', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          setRecentlyPlayedAlbums(data);
+        } else {
+          const errorData = await response.json();
+          setAlbumsMessage(`Failed to fetch recently played albums: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error('Error fetching recently played albums:', error);
+        setAlbumsMessage('An error occurred while fetching recently played albums.');
+      }
+    };
+  
+    fetchRecentlyPlayedAlbums();
+  }, []);
+
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
       {/* Left Side Navigation Bar */}
@@ -259,74 +300,43 @@ export default function HomePage() {
 
         {/* Carousel Section - Recently Played Songs */}
 <div style={carouselContainerStyle} className="w-full mt-8">
-<h4 className="text-white text-2xl mb-4">Your Recently Listened Songs</h4>
+  <h4 className="text-white text-2xl mb-4">Your Recently Listened Songs</h4>
   {message && <p className="text-red-500">{message}</p>}
   {recentlyPlayedSongs.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
       {recentlyPlayedSongs.map((item, index) => {
         const track = item.track;
-        const albumImages = track.album.images;
-        const albumImageUrl =
-          albumImages && albumImages.length > 0 ? albumImages[0].url : null;
+        const albumImageUrl = track.album.images?.[0]?.url;
+        const spotifyUrl = track.external_urls.spotify;
 
         return (
-          <div
-      key={index}
-      className="carousel-item"
-      style={{
-      display: 'flex',
-        flexDirection: 'column', // Stack items vertically
-        alignItems: 'center',
-        padding: '10px',
-        boxSizing: 'border-box',
-        minHeight: '220px', // Adjust as needed
-      }}
-    >
-      {albumImageUrl && (
-        <img
-          src={albumImageUrl}
-          alt={`Album art for ${track.name}`}
-          style={{
-            width: '10rem',
-            height: '10rem',
-            objectFit: 'cover',
-            marginBottom: '0.5rem',
-            borderRadius: '9999px',
-          }}
-        />
-      )}
-      {/* Text Container */}
-      <div
-        className="text-container"
-        style={{
-          display: 'flex',
-          flexDirection: 'column', // Stack text elements vertically
-          alignItems: 'center',
-        }}
-      >
-        <p
-          style={{
-            color: 'black',
-            textAlign: 'center',
-            fontWeight: 'bold',
-            margin: 0,
-          }}
-        >
-          {track.name}
-        </p>
-        <p
-          style={{
-            color: 'black',
-            textAlign: 'center',
-            margin: 0,
-          }}
-        >
-          {track.artists.map((artist) => artist.name).join(', ')}
-        </p>
-      </div>
-    </div>
-  );
-})}
+          <a
+            key={index}
+            href={spotifyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={carouselItemClass}
+          >
+            {albumImageUrl ? (
+              <img
+                src={albumImageUrl}
+                alt={`Album art for ${track.name}`}
+                className="w-40 h-40 object-cover mb-2 rounded-full"
+              />
+            ) : (
+              <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-full mb-2">
+                <span className="text-gray-500">No Image</span>
+              </div>
+            )}
+            <p className="text-black text-center font-bold text-sm m-0 truncate w-full">
+              {track.name}
+            </p>
+            <p className="text-black text-center text-xs m-0 truncate w-full">
+              {track.artists.map((artist) => artist.name).join(', ')}
+            </p>
+          </a>
+        );
+      })}
     </Carousel>
   ) : (
     !message && <p className="text-white">Loading recently played songs...</p>
@@ -334,59 +344,33 @@ export default function HomePage() {
 </div>
   
         {/* Carousel Section - Your Playlists */}
-        <div style={carouselContainerStyle} className="w-full mt-8">
+<div style={carouselContainerStyle} className="w-full mt-8">
   <h2 className="text-white text-2xl mb-4">Your Playlists</h2>
   {playlistsMessage && <p className="text-red-500">{playlistsMessage}</p>}
   {userPlaylists.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
       {userPlaylists.map((playlist, index) => {
-        const playlistImageUrl =
-          playlist.images && playlist.images.length > 0 ? playlist.images[0].url : null;
+        const playlistImageUrl = playlist.images?.[0]?.url;
 
         return (
-          <div
-            key={index}
-            className="carousel-item flex flex-col items-center p-2"
-            style={{
-              backgroundColor: 'white',
-              boxSizing: 'border-box',
-              minHeight: '220px',
-            }}
-          >
-            {playlistImageUrl && (
+          <div key={index} className={carouselItemClass}>
+            {playlistImageUrl ? (
               <img
                 src={playlistImageUrl}
                 alt={`Cover art for ${playlist.name}`}
-                style={{
-                  width: '10rem',
-                  height: '10rem',
-                  objectFit: 'cover',
-                  marginBottom: '0.5rem',
-                  borderRadius: '8px', // Slightly rounded corners
-                }}
+                className="w-40 h-40 object-cover mb-2 rounded-lg"
               />
+            ) : (
+              <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-lg mb-2">
+                <span className="text-gray-500">No Image</span>
+              </div>
             )}
-            <div className="flex flex-col items-center">
-              <p
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  margin: 0,
-                }}
-              >
-                {playlist.name}
-              </p>
-              <p
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  margin: 0,
-                }}
-              >
-                {playlist.tracks.total} songs
-              </p>
-            </div>
+            <p className="text-black text-center font-bold m-0 truncate w-full">
+              {playlist.name}
+            </p>
+            <p className="text-black text-center m-0">
+              {playlist.tracks.total} songs
+            </p>
           </div>
         );
       })}
@@ -396,65 +380,90 @@ export default function HomePage() {
   )}
 </div>
   
-        {/* Carousel Section - Reviews */}
-        <div style={carouselContainerStyle} className="w-full mt-8">
+       {/* Carousel Section - Top Artists */}
+<div style={carouselContainerStyle} className="w-full mt-8">
   <h2 className="text-white text-2xl mb-4">Your Top Artists</h2>
   {artistsMessage && <p className="text-red-500">{artistsMessage}</p>}
   {topArtists.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
       {topArtists.map((artist, index) => {
         const artistImageUrl = artist.images.length > 0 ? artist.images[0].url : null;
+        const spotifyUrl = artist.external_urls.spotify;
 
         return (
-          <div
+          <a
             key={index}
-            className="carousel-item flex flex-col items-center p-2"
-            style={{
-              backgroundColor: 'white',
-              boxSizing: 'border-box',
-              minHeight: '220px',
-            }}
+            href={spotifyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={carouselItemClass}
           >
-            {artistImageUrl && (
+            {artistImageUrl ? (
               <img
                 src={artistImageUrl}
                 alt={`Image of ${artist.name}`}
-                style={{
-                  width: '10rem',
-                  height: '10rem',
-                  objectFit: 'cover',
-                  marginBottom: '0.5rem',
-                  borderRadius: '50%',
-                }}
+                className="w-40 h-40 object-cover mb-2 rounded-full"
               />
+            ) : (
+              <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-full mb-2">
+                <span className="text-gray-500">No Image</span>
+              </div>
             )}
-            <div className="flex flex-col items-center">
-              <p
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  margin: 0,
-                }}
-              >
-                {artist.name}
-              </p>
-              <p
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  margin: 0,
-                }}
-              >
-                {artist.genres.slice(0, 2).join(', ')}
-              </p>
-            </div>
-          </div>
+            <p className="text-black text-center font-bold m-0 truncate w-full">
+              {artist.name}
+            </p>
+            <p className="text-black text-center m-0 truncate w-full">
+              {artist.genres.slice(0, 2).join(', ')}
+            </p>
+          </a>
         );
       })}
     </Carousel>
   ) : (
     !artistsMessage && <p className="text-white">Loading top artists...</p>
+  )}
+</div>
+
+{/* Carousel Section - Recently Played Albums */}
+<div style={carouselContainerStyle} className="w-full mt-8 mb-8">
+  <h2 className="text-white text-2xl mb-4">Recently Played Albums</h2>
+  {albumsMessage && <p className="text-red-500">{albumsMessage}</p>}
+  {recentlyPlayedAlbums.length > 0 ? (
+    <Carousel responsive={responsive} arrows={true}>
+      {recentlyPlayedAlbums.map((album, index) => {
+        const spotifyUrl = album.external_urls.spotify;
+
+        return (
+          <a
+            key={index}
+            href={spotifyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={carouselItemClass}
+          >
+            {album.images[0]?.url ? (
+              <img
+                src={album.images[0]?.url}
+                alt={`Album art for ${album.name}`}
+                className="w-40 h-40 object-cover mb-2 rounded-lg"
+              />
+            ) : (
+              <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-lg mb-2">
+                <span className="text-gray-500">No Image</span>
+              </div>
+            )}
+            <p className="text-black text-center font-bold m-0 truncate w-full">
+              {album.name}
+            </p>
+            <p className="text-black text-center m-0 truncate w-full">
+              {album.artists.map((artist) => artist.name).join(', ')}
+            </p>
+          </a>
+        );
+      })}
+    </Carousel>
+  ) : (
+    !albumsMessage && <p className="text-white">Loading recently played albums...</p>
   )}
 </div>
 
