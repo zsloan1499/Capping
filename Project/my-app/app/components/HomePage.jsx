@@ -28,7 +28,7 @@ export default function HomePage() {
 
   // Carousel item class with updated styles
   const carouselItemClass =
-    'carousel-item flex flex-col items-center justify-center p-4 bg-[#F5FFFA] hover:bg-[#FFC0CB] min-h-[280px] hover:scale-125 rounded-lg shadow-md hover:shadow-xl transition-transform transform duration-300 hover:scale-105 min-h-[260px]';
+    'carousel-item flex flex-col items-center justify-center p-4 bg-gray-300 hover:bg-[#FFC0CB] min-h-[280px] hover:scale-125 rounded-lg shadow-md hover:shadow-xl transition-transform transform duration-300 hover:scale-105 min-h-[260px]';
 
   const itemStyle = {
     //width: '100%',  // Ensure each item takes up full width of the carousel container
@@ -326,7 +326,7 @@ export default function HomePage() {
                 className="w-40 h-40 object-cover mb-2 rounded-full"
               />
             ) : (
-              <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-full mb-2">
+              <div className="w-40 h-40 bg-gray-800 flex items-center justify-center rounded-full mb-2">
                 <span className="text-gray-500">No Image</span>
               </div>
             )}
@@ -350,7 +350,8 @@ export default function HomePage() {
   <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Your Playlists</h2>
   {playlistsMessage && <p className="text-red-500">{playlistsMessage}</p>}
   {userPlaylists.length > 0 ? (
-    <Carousel responsive={responsive} arrows={true}>
+    <Carousel responsive={responsive} arrows={true}showDots={true}
+    dotListClass="custom-dot-list-style">
       {userPlaylists.map((playlist, index) => {
         const playlistImageUrl = playlist.images?.[0]?.url;
 
@@ -387,7 +388,8 @@ export default function HomePage() {
   <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Your Top Artists</h2>
   {artistsMessage && <p className="text-red-500">{artistsMessage}</p>}
   {topArtists.length > 0 ? (
-    <Carousel responsive={responsive} arrows={true}>
+    <Carousel responsive={responsive} arrows={true}showDots={true}
+    dotListClass="custom-dot-list-style">
       {topArtists.map((artist, index) => {
         const artistImageUrl = artist.images.length > 0 ? artist.images[0].url : null;
         const spotifyUrl = artist.external_urls.spotify;
@@ -431,7 +433,8 @@ export default function HomePage() {
   <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Recently Played Albums</h2>
   {albumsMessage && <p className="text-red-500">{albumsMessage}</p>}
   {recentlyPlayedAlbums.length > 0 ? (
-    <Carousel responsive={responsive} arrows={true}>
+    <Carousel responsive={responsive} arrows={true}showDots={true}
+    dotListClass="custom-dot-list-style">
       {recentlyPlayedAlbums.map((album, index) => {
         const spotifyUrl = album.external_urls.spotify;
 
