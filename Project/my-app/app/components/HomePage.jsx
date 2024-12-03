@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { searchSpotify } from "../api/searchSpotify/route"; // Ensure correct path to the search program
+import Head from 'next/head'; // Import Head for adding Google Fonts
 
 export default function HomePage() {
   const { data: session } = useSession(); 
@@ -27,8 +28,8 @@ export default function HomePage() {
 
   // Carousel item class with updated styles
   const carouselItemClass =
-    'carousel-item flex flex-col items-center justify-center p-4 bg-[#F5FFFA] hover:bg-[#FFC0CB] min-h-[280px] hover:scale-125 transition transform duration-300';
-
+    'carousel-item flex flex-col items-center justify-center p-4 bg-[#F5FFFA] hover:bg-[#FFC0CB] min-h-[280px] hover:scale-125 rounded-lg shadow-md hover:shadow-xl transition-transform transform duration-300 hover:scale-105 min-h-[260px]';
+    
   const itemStyle = {
     //width: '100%',  // Ensure each item takes up full width of the carousel container
     display: 'flex',
@@ -300,10 +301,11 @@ export default function HomePage() {
 
         {/* Carousel Section - Recently Played Songs */}
 <div style={carouselContainerStyle} className="w-full mt-8">
-  <h4 className="text-white text-2xl mb-4">Your Recently Listened Songs</h4>
+  <h4 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Your Recently Listened Songs</h4>
   {message && <p className="text-red-500">{message}</p>}
   {recentlyPlayedSongs.length > 0 ? (
-    <Carousel responsive={responsive} arrows={true}>
+    <Carousel responsive={responsive} arrows={true}showDots={true}
+    dotListClass="custom-dot-list-style">
       {recentlyPlayedSongs.map((item, index) => {
         const track = item.track;
         const albumImageUrl = track.album.images?.[0]?.url;
@@ -345,7 +347,7 @@ export default function HomePage() {
   
         {/* Carousel Section - Your Playlists */}
 <div style={carouselContainerStyle} className="w-full mt-8">
-  <h2 className="text-white text-2xl mb-4">Your Playlists</h2>
+  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Your Playlists</h2>
   {playlistsMessage && <p className="text-red-500">{playlistsMessage}</p>}
   {userPlaylists.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
@@ -382,7 +384,7 @@ export default function HomePage() {
   
        {/* Carousel Section - Top Artists */}
 <div style={carouselContainerStyle} className="w-full mt-8">
-  <h2 className="text-white text-2xl mb-4">Your Top Artists</h2>
+  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Your Top Artists</h2>
   {artistsMessage && <p className="text-red-500">{artistsMessage}</p>}
   {topArtists.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
@@ -426,7 +428,7 @@ export default function HomePage() {
 
 {/* Carousel Section - Recently Played Albums */}
 <div style={carouselContainerStyle} className="w-full mt-8 mb-8">
-  <h2 className="text-white text-2xl mb-4">Recently Played Albums</h2>
+  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Recently Played Albums</h2>
   {albumsMessage && <p className="text-red-500">{albumsMessage}</p>}
   {recentlyPlayedAlbums.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}>
