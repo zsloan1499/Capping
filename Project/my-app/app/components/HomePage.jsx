@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { searchSpotify } from "../api/searchSpotify/route"; // Ensure correct path to the search program
-import Head from 'next/head'; // Import Head for adding Google Fonts
+import Footer from './Footer';
 
 export default function HomePage() {
   const { data: session } = useSession(); 
@@ -29,7 +29,7 @@ export default function HomePage() {
   // Carousel item class with updated styles
   const carouselItemClass =
     'carousel-item flex flex-col items-center justify-center p-4 bg-[#F5FFFA] hover:bg-[#FFC0CB] min-h-[280px] hover:scale-125 rounded-lg shadow-md hover:shadow-xl transition-transform transform duration-300 hover:scale-105 min-h-[260px]';
-    
+
   const itemStyle = {
     //width: '100%',  // Ensure each item takes up full width of the carousel container
     display: 'flex',
@@ -467,10 +467,12 @@ export default function HomePage() {
   ) : (
     !albumsMessage && <p className="text-white">Loading recently played albums...</p>
   )}
-</div>
+  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2"></h2>
 
+</div>
+    {/* Footer */}
+    <Footer />
       </div>
     </div>
   );
-  
 }
