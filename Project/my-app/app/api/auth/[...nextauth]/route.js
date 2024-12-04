@@ -5,6 +5,8 @@ import { connectMongoDB } from "../../../../lib/mongodb";
 import bcrypt from "bcryptjs";
 import SpotifyProvider from "next-auth/providers/spotify";
 import GoogleProvider from 'next-auth/providers/google';
+import crypto from "crypto";
+import { sendOtpEmail } from "./email.js";
 
 const ZACH_GOOGLE_CLIENT_ID = process.env.ZACH_GOOGLE_CLIENT_ID;
 const ZACH_GOOGLE_SECRET = process.env.ZACH_GOOGLE_SECRET;
@@ -19,7 +21,7 @@ export const authOptions = {
             name: "credentials",
             credentials: {},
             async authorize(credentials) {
-                const { email, password } = credentials;
+                const { email, password, otp } = credentials;
 
                 try {
                     await connectMongoDB();
@@ -30,13 +32,35 @@ export const authOptions = {
                         return null;
                     }
 
-                    // Compare password if user logs in via credentials
+                    // Step 1: Validate password
                     const passwordsMatch = await bcrypt.compare(password, user.password);
 
                     if (!passwordsMatch) {
                         console.log("Invalid password");
                         return null;
                     }
+
+                    // Step 2: If OTP is not provided, generate and send it
+                    if (!otp) {
+                        const generatedOtp = crypto.randomInt(100000, 999999).toString();
+                        user.otp = generatedOtp;
+                        user.otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+                        await user.save();
+                        
+                        await sendOtpEmail(email, generatedOtp);
+                        throw new Error("OTP sent to your email. Please re-submit with the OTP.");
+                    }
+
+                    // Step 3: Validate OTP
+                    if (otp !== user.otp || new Date() > user.otpExpires) {
+                        console.log("Invalid or expired OTP");
+                        return null;
+                    }
+
+                    // Clear OTP after use
+                    user.otp = null;
+                    user.otpExpires = null;
+                    await user.save();
 
                     return user; // Return the user object
                 } catch (error) {
