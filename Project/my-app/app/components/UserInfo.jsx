@@ -151,7 +151,7 @@ export default function UserInfo() {
                     if (response.ok) {
                         setReviews(data.reviews || []);  // Store the reviews including reviewId
                     } else {
-                        setError('Failed to load reviews');
+                        setError('');
                     }
                 } catch (error) {
                     console.error("Error fetching reviews:", error);
