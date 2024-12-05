@@ -25,11 +25,12 @@ export default function HomePage() {
   const [albumsMessage, setAlbumsMessage] = useState('');
   const [recentlyListenedArtists, setRecentlyListenedArtists] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [menuOpenIndex, setMenuOpenIndex] = useState(null);
 
 
   // Carousel item class with updated styles
   const carouselItemClass =
-    'carousel-item flex flex-col items-center justify-center p-4 bg-gray-300 hover:bg-[#FFC0CB] min-h-[280px] hover:scale-125 rounded-lg shadow-md hover:shadow-xl transition-transform transform duration-300 hover:scale-105 min-h-[260px]';
+    'carousel-item flex flex-col items-center justify-center p-4 bg-gray-300 min-h-[280px] rounded-lg shadow-md min-h-[260px]';
 
   const itemStyle = {
     //width: '100%',  // Ensure each item takes up full width of the carousel container
@@ -354,21 +355,35 @@ export default function HomePage() {
   <h4 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Your Recently Listened Songs</h4>
   {message && <p className="text-red-500">{message}</p>}
   {recentlyPlayedSongs.length > 0 ? (
-    <Carousel responsive={responsive} arrows={true}showDots={true}
-    dotListClass="custom-dot-list-style">
+    <Carousel responsive={responsive} arrows={true} showDots={true} dotListClass="custom-dot-list-style">
       {recentlyPlayedSongs.map((item, index) => {
         const track = item.track;
         const albumImageUrl = track.album.images?.[0]?.url;
         const spotifyUrl = track.external_urls.spotify;
 
         return (
-          <a
-            key={index}
-            href={spotifyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={carouselItemClass}
-          >
+          <div key={index} className={`${carouselItemClass} relative`}>
+            {/* 3-Dots Menu */}
+  <div className="absolute top-2 right-2 z-10 group focus:outline-none">
+    <button
+      className="dots-menu relative focus:outline-none"
+      onClick={() =>
+        window.location.href = `/Review?songName=${track.name}&artistName=${track.artists.map(artist => artist.name).join(', ')}&spotifyId=${track.id}`
+      }
+    >
+      ...
+    </button>
+    {/* Tooltip */}
+    <span
+      className="absolute top-8 right-0 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+      style={{ whiteSpace: "nowrap", maxWidth: "150px" }}
+    >
+      Review
+    </span>
+  </div>
+
+            {/* Song Image */}
+            <a href={spotifyUrl} target="_blank" rel="noopener noreferrer">
             {albumImageUrl ? (
               <img
                 src={albumImageUrl}
@@ -380,13 +395,16 @@ export default function HomePage() {
                 <span className="text-gray-500">No Image</span>
               </div>
             )}
+          </a>
+
+            {/* Song Details */}
             <p className="text-black text-center font-bold text-sm m-0 truncate w-full">
               {track.name}
             </p>
             <p className="text-black text-center text-xs m-0 truncate w-full">
               {track.artists.map((artist) => artist.name).join(', ')}
             </p>
-          </a>
+          </div>
         );
       })}
     </Carousel>
@@ -394,6 +412,7 @@ export default function HomePage() {
     !message && <p className="text-white">Loading recently played songs...</p>
   )}
 </div>
+
   
         {/* Carousel Section - Your Playlists */}
 <div style={carouselContainerStyle} className="w-full mt-8">
