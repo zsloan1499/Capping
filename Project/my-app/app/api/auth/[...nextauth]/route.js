@@ -21,6 +21,7 @@ export const authOptions = {
             credentials: {},
             async authorize(credentials) {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 console.log("API Route /api/auth/[...nextauth] invoked.");
 
                 const { email, password, otp } = credentials;
@@ -39,6 +40,9 @@ export const authOptions = {
                 console.log("Authorization process started...");
                 await connectMongoDB();
                 console.log("Connected to MongoDB");
+=======
+                const { email, password } = credentials;
+>>>>>>> parent of 9f0b020 (2FA emails send correctly)
 
                 try {
                     const user = await User.findOne({ email });
@@ -48,6 +52,7 @@ export const authOptions = {
                         return null; // Return null for missing users in NextAuth `authorize`
                     }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
                     if (!email) {
                         console.log("Error: Missing email.");
@@ -85,6 +90,8 @@ export const authOptions = {
 
                     
 =======
+=======
+>>>>>>> parent of 9f0b020 (2FA emails send correctly)
                     // Compare password if user logs in via credentials
                     const passwordsMatch = await bcrypt.compare(password, user.password);
 
