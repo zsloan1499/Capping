@@ -5,8 +5,6 @@ import { connectMongoDB } from "../../../../lib/mongodb";
 import bcrypt from "bcryptjs";
 import SpotifyProvider from "next-auth/providers/spotify";
 import GoogleProvider from 'next-auth/providers/google';
-import crypto from "crypto";
-import { sendOtpEmail } from "./email.js";
 
 const ZACH_GOOGLE_CLIENT_ID = process.env.ZACH_GOOGLE_CLIENT_ID;
 const ZACH_GOOGLE_SECRET = process.env.ZACH_GOOGLE_SECRET;
@@ -22,9 +20,13 @@ export const authOptions = {
             name: "credentials",
             credentials: {},
             async authorize(credentials) {
+<<<<<<< HEAD
                 console.log("API Route /api/auth/[...nextauth] invoked.");
 
                 const { email, password, otp } = credentials;
+=======
+                const { email, password } = credentials;
+>>>>>>> parent of 9f0b020 (2FA emails send correctly)
 
                 console.log("Incoming Request Body:", credentials);
                 console.log("Request Email:", credentials.email);
@@ -46,6 +48,7 @@ export const authOptions = {
                         return null; // Return null for missing users in NextAuth `authorize`
                     }
 
+<<<<<<< HEAD
                     if (!email) {
                         console.log("Error: Missing email.");
                         return res.status(400).json({ message: "Email is required." });
@@ -81,6 +84,17 @@ export const authOptions = {
                     return user;
 
                     
+=======
+                    // Compare password if user logs in via credentials
+                    const passwordsMatch = await bcrypt.compare(password, user.password);
+
+                    if (!passwordsMatch) {
+                        console.log("Invalid password");
+                        return null;
+                    }
+
+                    return user; // Return the user object
+>>>>>>> parent of 9f0b020 (2FA emails send correctly)
                 } catch (error) {
                     console.error("Error during authorization:", error.message);
                     throw new Error(error.message);

@@ -168,16 +168,6 @@ const userSchema = new Schema({
         required: false,
     }],
 
-    // Fields for 2FA
-    otp: {
-        type: String, // Store the OTP
-        default: null,
-    },
-    otpExpires: {
-        type: Date, // Expiration time for the OTP
-        default: null,
-    },
-
 }, { timestamps: true });
 
 const User = models.User || mongoose.model("User", userSchema);
