@@ -9,7 +9,6 @@ import GoogleProvider from 'next-auth/providers/google';
 const ZACH_GOOGLE_CLIENT_ID = process.env.ZACH_GOOGLE_CLIENT_ID;
 const ZACH_GOOGLE_SECRET = process.env.ZACH_GOOGLE_SECRET;
 
-
 export const authOptions = {
     providers: [
         GoogleProvider({
@@ -20,78 +19,17 @@ export const authOptions = {
             name: "credentials",
             credentials: {},
             async authorize(credentials) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                console.log("API Route /api/auth/[...nextauth] invoked.");
-
-                const { email, password, otp } = credentials;
-=======
                 const { email, password } = credentials;
->>>>>>> parent of 9f0b020 (2FA emails send correctly)
-
-                console.log("Incoming Request Body:", credentials);
-                console.log("Request Email:", credentials.email);
-                console.log("Request Password:", credentials.password ? "Provided" : "Not Provided");
-                console.log("Request OTP:", credentials.otp ? credentials.otp : "Not Provided");
-
-
-                console.log("Route handler invoked with method:", req.method);
-
-                console.log("Authorization process started...");
-                await connectMongoDB();
-                console.log("Connected to MongoDB");
-=======
-                const { email, password } = credentials;
->>>>>>> parent of 9f0b020 (2FA emails send correctly)
 
                 try {
+                    await connectMongoDB();
                     const user = await User.findOne({ email });
 
                     if (!user) {
-                        console.log("User not found.");
-                        return null; // Return null for missing users in NextAuth `authorize`
+                        console.log("User not found");
+                        return null;
                     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-                    if (!email) {
-                        console.log("Error: Missing email.");
-                        return res.status(400).json({ message: "Email is required." });
-                    }
-                    
-                    if (!password && !otp) {
-                        console.log("Error: Missing password or OTP.");
-                        return res.status(400).json({ message: "Password or OTP is required." });
-                    }
-
-                    if (!otp) {
-                        console.log("No OTP provided. Generating OTP...");
-                        const generatedOtp = crypto.randomInt(100000, 999999).toString();
-                        user.otp = generatedOtp;
-                        user.otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Expires in 5 minutes
-                        await user.save();
-                    
-                        await sendOtpEmail(email, generatedOtp);
-                        console.log("OTP sent successfully:", generatedOtp);
-                        throw new Error("OTP sent to your email. Please re-submit with the OTP.");
-                    }
-                    
-                    console.log("Validating OTP...");
-                    if (otp !== user.otp || new Date() > user.otpExpires) {
-                        console.log("Invalid or expired OTP.");
-                        throw new Error("Invalid or expired OTP.");
-                    }
-                    
-                    console.log("OTP validated successfully.");
-                    user.otp = null;
-                    user.otpExpires = null;
-                    await user.save();
-                    return user;
-
-                    
-=======
-=======
->>>>>>> parent of 9f0b020 (2FA emails send correctly)
                     // Compare password if user logs in via credentials
                     const passwordsMatch = await bcrypt.compare(password, user.password);
 
@@ -101,10 +39,9 @@ export const authOptions = {
                     }
 
                     return user; // Return the user object
->>>>>>> parent of 9f0b020 (2FA emails send correctly)
                 } catch (error) {
-                    console.error("Error during authorization:", error.message);
-                    throw new Error(error.message);
+                    console.error("Authorization error:", error);
+                    return null;
                 }
             },
         }),
@@ -127,20 +64,23 @@ export const authOptions = {
     },
     callbacks: {
         async signIn({ account, profile }) {
-            console.log("Sign-in process triggered...");
+            // Handle user creation if the provider is Google or Spotify
             if (account.provider === "google" || account.provider === "spotify") {
                 try {
                     await connectMongoDB();
-                    console.log("Connected to MongoDB during sign-in");
+                    console.log("Connected to MongoDB");
 
+                    // Check if user already exists in the database
                     let user = await User.findOne({ email: profile.email });
 
+                    // If user doesn't exist, create a new one
                     if (!user) {
-                        console.log("Creating a new user for sign-in...");
                         const fName = profile.given_name || profile.name?.split(" ")[0];
                         const lName = profile.family_name || profile.name?.split(" ")[1] || "";
-                        const username = profile.email.split("@")[0];
+                        const username = profile.email.split("@")[0];  // Use part of email for username
+                  
 
+                        // Call the register API to create the user
                         const res = await fetch('../../register', {
                             method: "POST",
                             headers: {
@@ -152,53 +92,51 @@ export const authOptions = {
                                 username,
                                 email: profile.email,
                                 password: "", // No password for OAuth users
-                                profilePhoto: profile.picture || "",
+                                profilePhoto: profile.picture || "", // Set profile photo
                             })
                         });
 
+                        // Check if the user was created successfully
                         if (res.ok) {
                             const newUser = await res.json();
                             console.log('New user created via API:', newUser);
-                            return { ...newUser, profilePhoto: newUser.profilePhoto };
+                            return { ...newUser, profilePhoto: newUser.profilePhoto }; // Return user with profilePhoto
                         } else {
-                            console.error('Failed to create user during sign-in:', await res.json());
-                            return null;
+                            console.error('Failed to create user:', await res.json());
+                            return null; // Prevent sign-in if user creation fails
                         }
                     } else {
-                        console.log('User already exists during sign-in:', user);
-                        return { ...user, profilePhoto: user.profilePhoto };
+                        console.log('User already exists:', user);
+                        return { ...user, profilePhoto: user.profilePhoto }; // Return existing user with profilePhoto
                     }
                 } catch (error) {
-                    console.error('Error during sign-in:', error);
-                    return null;
+                    console.error('Error handling sign in:', error);
                 }
             }
 
-            return true;
+            return true; // Return true for other cases
         },
 
         async jwt({ token, user }) {
-            console.log("JWT callback triggered...");
             if (user) {
                 token.id = user._id;
                 token.email = user.email;
                 token.fName = user.fName;
                 token.lName = user.lName;
-                token.username = user.username;
+                token.username = user.username; // Ensure updated username
                 token.profilePhoto = user.profilePhoto;
             }
             return token;
         },
         
         async session({ session, token }) {
-            console.log("Session callback triggered...");
             if (token) {
                 session.user = {
                     id: token.id,
                     email: token.email,
                     fName: token.fName,
                     lName: token.lName,
-                    username: token.username,
+                    username: token.username, // Updated username
                     profilePhoto: token.profilePhoto,
                 };
             }

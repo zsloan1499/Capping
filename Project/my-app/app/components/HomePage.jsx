@@ -349,38 +349,43 @@ export default function HomePage() {
 <div style={carouselContainerStyle} className="w-full mt-8">
   <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Your Playlists</h2>
   {playlistsMessage && <p className="text-red-500">{playlistsMessage}</p>}
-  {userPlaylists.length > 0 ? (
-    <Carousel responsive={responsive} arrows={true}showDots={true}
-    dotListClass="custom-dot-list-style">
-      {userPlaylists.map((playlist, index) => {
-        const playlistImageUrl = playlist.images?.[0]?.url;
+  {userPlaylists?.length > 0 ? (
+  <Carousel 
+    responsive={responsive} 
+    arrows={true} 
+    showDots={true} 
+    dotListClass="custom-dot-list-style"
+  >
+    {userPlaylists.map((playlist, index) => {
+      // Ensure playlist is valid
+      const playlistImageUrl = playlist?.images?.[0]?.url;
 
-        return (
-          <div key={index} className={carouselItemClass}>
-            {playlistImageUrl ? (
-              <img
-                src={playlistImageUrl}
-                alt={`Cover art for ${playlist.name}`}
-                className="w-40 h-40 object-cover mb-2 rounded-lg"
-              />
-            ) : (
-              <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-lg mb-2">
-                <span className="text-gray-500">No Image</span>
-              </div>
-            )}
-            <p className="text-black text-center font-bold m-0 truncate w-full">
-              {playlist.name}
-            </p>
-            <p className="text-black text-center m-0">
-              {playlist.tracks.total} songs
-            </p>
-          </div>
-        );
-      })}
-    </Carousel>
-  ) : (
-    !playlistsMessage && <p className="text-white">Loading your playlists...</p>
-  )}
+      return (
+        <div key={index} className={carouselItemClass}>
+          {playlistImageUrl ? (
+            <img
+              src={playlistImageUrl}
+              alt={`Cover art for ${playlist?.name || "Unnamed Playlist"}`}
+              className="w-40 h-40 object-cover mb-2 rounded-lg"
+            />
+          ) : (
+            <div className="w-40 h-40 bg-gray-300 flex items-center justify-center rounded-lg mb-2">
+              <span className="text-gray-500">No Image</span>
+            </div>
+          )}
+          <p className="text-black text-center font-bold m-0 truncate w-full">
+            {playlist?.name || "Unnamed Playlist"}
+          </p>
+          <p className="text-black text-center m-0">
+            {playlist?.tracks?.total || 0} songs
+          </p>
+        </div>
+      );
+    })}
+  </Carousel>
+) : (
+  !playlistsMessage && <p className="text-white">Loading your playlists...</p>
+)}
 </div>
   
        {/* Carousel Section - Top Artists */}
