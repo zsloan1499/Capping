@@ -71,27 +71,27 @@ export default function FriendPage() {
         <div className="w-screen h-screen flex bg-customBlue">
             {/* Left Side Navigation Bar */}
             <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-auto p-4 flex flex-col space-y-4 transition-width duration-300`}>
-        <button
-            className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
-            onClick={toggleNav}
-        >
-            {isNavOpen ? 'Close' : 'Open'}
-        </button>
+                <button
+                    className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
+                    onClick={toggleNav}
+                >
+                    {isNavOpen ? 'Close' : 'Open'}
+                </button>
 
-        {isNavOpen && (
-          <>
-          <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
-          <Link href="/Playlists" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
-          <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
-          <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
-          <Link href="/Activity" className="text-white p-2 hover:bg-gray-700 rounded w-full">Activity</Link>
-          <Link href="/Global" className="text-white p-2 hover:bg-gray-700 rounded">Global</Link>
-        </>
-        )}
-    </nav>
+                {isNavOpen && (
+                    <>
+                        <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
+                        <Link href="/Playlists" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
+                        <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
+                        <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
+                        <Link href="/Activity" className="text-white p-2 hover:bg-gray-700 rounded w-full">Activity</Link>
+                        <Link href="/Global" className="text-white p-2 hover:bg-gray-700 rounded">Global</Link>
+                    </>
+                )}
+            </nav>
 
             {/* Main Content Area */}
-            <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>
+            <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'} bg-customBlue overflow-y-auto`}>
                 <div className="flex items-center justify-between">
                     <h1 className="text-white text-2xl font-bold mb-4">Add Friends</h1>
                     

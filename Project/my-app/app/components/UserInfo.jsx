@@ -797,8 +797,7 @@ export default function UserInfo() {
       {/* Like and Delete Buttons Section */}
       <div className="flex items-center justify-between mt-4">
         <div className="flex items-center">
-          <FaThumbsUp />
-          <span className="ml-5">{review.likes || 0}</span>
+        <span className="">Likes: {review.likes?.length || 0}</span>
         </div>
 
         {/* Delete Review Button */}

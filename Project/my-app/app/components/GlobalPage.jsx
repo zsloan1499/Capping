@@ -1,99 +1,44 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react'; 
-import Head from 'next/head';
 import { BellIcon, CogIcon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
 
 export default function Top50US() {
   const { data: session, status } = useSession();
-  const [topTracks, setTopTracks] = useState([]);
+  const [songs, setSongs] = useState([]); // Store songs with average ratings
   const [errorMessage, setErrorMessage] = useState('');
   const [player, setPlayer] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackUri, setCurrentTrackUri] = useState(null);
   const [isNavOpen, setIsNavOpen] = useState(false);
 
+  // useEffect to fetch top songs when the component mounts
   useEffect(() => {
-    const fetchTopTracks = async () => {
-      if (status === 'authenticated' && session?.accessToken) {
-        try {
-          const response = await fetch('/api/getTopTracks', {
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            setTopTracks(data); 
-          } else {
-            const errorData = await response.json();
-            setErrorMessage(`Failed to fetch top tracks: ${errorData.error}`);
-          }
-        } catch (error) {
-          console.error('Error fetching top tracks:', error);
-          setErrorMessage('An error occurred while fetching top tracks.');
+    const fetchSongs = async () => {
+      try {
+        const response = await fetch('/api/getGlobalRanking'); // Your API endpoint to fetch top songs
+        const data = await response.json();
+        
+        if (response.ok) {
+          setSongs(data); // Set the songs in state
+        } else {
+          setErrorMessage('Failed to fetch songs');
         }
-      } else {
-        setErrorMessage('Please log in with Spotify to view the Top 50 US songs.');
+      } catch (error) {
+        setErrorMessage('An error occurred while fetching songs');
+        console.error(error);
       }
     };
 
-    fetchTopTracks();
-  }, [status, session?.accessToken]);
-
-  const toggleNav = () => {
-    setIsNavOpen(!isNavOpen);
-  };
-
-  const playTrack = (uri) => {
-    if (player) {
-      player._options.getOAuthToken((token) => {
-        fetch(`https://api.spotify.com/v1/me/player/play`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ uris: [uri] }),
-        });
-      });
-    }
-  };
-
-  const saveTrackToLibrary = async (id) => {
-    const accessToken = session?.accessToken;
-    if (!accessToken) {
-      alert('You need to log in first!');
-      return;
-    }
-
-    try {
-      const response = await fetch(`https://api.spotify.com/v1/me/tracks?ids=${id}`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (response.ok) {
-        alert('Track saved to your library!');
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to save track: ${errorData.error.message}`);
-      }
-    } catch (error) {
-      console.error('Error saving track:', error);
-      alert('An error occurred while saving the track.');
-    }
-  };
+    fetchSongs();
+  }, []); // Empty dependency array to run once on mount
 
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
       {/* Left Side Navigation Bar */}
       <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-auto p-4 flex flex-col space-y-4 transition-width duration-300`}>
-        <button className="bg-blue-500 text-white p-2 rounded mb-4 w-16" onClick={toggleNav}>
+        <button className="bg-blue-500 text-white p-2 rounded mb-4 w-16" onClick={() => setIsNavOpen(!isNavOpen)}>
           {isNavOpen ? 'Close' : 'Open'}
         </button>
 
@@ -112,7 +57,7 @@ export default function Top50US() {
       {/* Main Content Area */}
       <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>
         <title>Melodi</title>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between ">
           <h1 className="text-white text-3xl font-bold">Melodi</h1>
           <div className="flex items-center space-x-4">
             <Link href="/UserInfo">
@@ -128,33 +73,38 @@ export default function Top50US() {
           </div>
         </div>
 
-        <Head>
-          <title>Top 50 Songs in the US</title>
-          <script src="https://sdk.scdn.co/spotify-player.js"></script>
-        </Head>
-
-        <h1 className="text-white text-3xl font-bold mb-6">Top 50 Songs in the US</h1>
+        <h2 className="text-white text-3xl font-bold mt-10 mb-10">Top 50 Rated Songs</h2>
 
         {errorMessage ? (
           <p className="text-red-500">{errorMessage}</p>
         ) : (
-          <ul className="bg-black p-4 rounded-md w-full max-w-xl space-y-4">
-            {topTracks.map((track, index) => (
-              <li key={index} className="flex items-center text-white p-2 hover:bg-gray-700 rounded">
-                <img src={track.track.album.images[0]?.url} alt={track.track.name} className="w-12 h-12 rounded-md mr-4" />
-                <div className="flex-grow">
-                  <p className="font-bold">{track.track.name}</p>
-                  <p>{track.track.artists.map((artist) => artist.name).join(', ')}</p>
-                </div>
-                <button onClick={() => playTrack(track.track.uri)} className="bg-green-500 text-white p-2 rounded ml-2">Play</button>
-                <button onClick={() => saveTrackToLibrary(track.track.id)} className="bg-blue-500 text-white p-2 rounded ml-2">Save</button>
-              </li>
-            ))}
-          </ul>
+          <ul className="bg-black p-4 rounded-md w-full space-y-4">
+  {songs.map((song, index) => (
+    <li key={index} className="flex items-center text-white p-2 hover:bg-gray-700 rounded">
+      <Link
+        href={{
+          pathname: '/GlobalReviews',
+          query: {
+            songId: song.id, // Sending the song ID as part of the query
+            songName: song.name, // Optional: Passing the song name
+            artistName: song.artist, // Optional: Passing the artist name
+          },
+        }}
+      >
+        <div className="flex items-center space-x-4 w-full cursor-pointer">
+          <span className="text-xl font-semibold">{`#${index + 1}`}</span> {/* Song rank */}
+          <div className="flex-grow">
+            <p className="font-bold">{song.name}</p> {/* Song title */}
+            <p className="text-sm">{song.artist}</p> {/* Artist name */}
+            <p className="text-sm text-gray-400">Average Rating: {song.averageRating.toFixed(1)}</p> {/* Average rating */}
+          </div>
+        </div>
+      </Link>
+    </li>
+  ))}
+</ul>
         )}
       </div>
     </div>
   );
 }
-
-
