@@ -1,4 +1,3 @@
-// app/api/getUserPlaylists/route.js
 import { NextResponse } from 'next/server';
 
 export async function GET(req) {
@@ -10,34 +9,44 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Spotify access token not found' }, { status: 401 });
     }
 
-    // Call Spotify API to get user's playlists, limited to 9 for testing purposes 
-    const response = await fetch('https://api.spotify.com/v1/me/playlists?limit=9', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    let playlists = [];
+    let nextUrl = 'https://api.spotify.com/v1/me/playlists'; // Initial URL to fetch playlists
 
-    if (!response.ok) {
-      let errorData;
-      try {
-        errorData = await response.json();
-      } catch (parseError) {
-        const errorText = await response.text();
-        console.error('Non-JSON error response from Spotify API:', errorText);
+    // Loop to fetch all playlists, following pagination links
+    while (nextUrl) {
+      const response = await fetch(nextUrl, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (parseError) {
+          const errorText = await response.text();
+          console.error('Non-JSON error response from Spotify API:', errorText);
+          return NextResponse.json(
+            { error: errorText || 'Failed to fetch playlists' },
+            { status: response.status }
+          );
+        }
+        console.error('Error from Spotify API:', errorData);
         return NextResponse.json(
-          { error: errorText || 'Failed to fetch playlists' },
+          { error: errorData.error?.message || 'Failed to fetch playlists' },
           { status: response.status }
         );
       }
-      console.error('Error from Spotify API:', errorData);
-      return NextResponse.json(
-        { error: errorData.error?.message || 'Failed to fetch playlists' },
-        { status: response.status }
-      );
+
+      const data = await response.json();
+      playlists = playlists.concat(data.items); // Add the current page's playlists to the list
+
+      // If there's a next page, update nextUrl
+      nextUrl = data.next;
     }
 
-    const data = await response.json();
-    return NextResponse.json(data.items); // Return the array of playlist items
+    return NextResponse.json(playlists); // Return the full list of playlists
   } catch (error) {
     console.error('Error fetching playlists:', error);
     return NextResponse.json({ error: 'Error fetching playlists' }, { status: 500 });

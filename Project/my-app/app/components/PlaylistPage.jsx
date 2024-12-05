@@ -1,4 +1,4 @@
-'use client';
+'use client'; // app/spotifyPlaylists.js
 
 import Head from 'next/head'; // Import Head from next/head
 import { useEffect, useState } from 'react';
@@ -15,7 +15,7 @@ export default function SpotifyPlaylists() {
   const [playlistTracks, setPlaylistTracks] = useState([]);
   const [playlistsMessage, setPlaylistsMessage] = useState('');
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [player, setPlayer] = useState(null);  // Spotify player instance
+  const [player, setPlayer] = useState(null); // Spotify player instance
   const [isPlaying, setIsPlaying] = useState(false); // Playback state
 
   const toggleNav = () => setIsNavOpen(!isNavOpen);
@@ -35,7 +35,9 @@ export default function SpotifyPlaylists() {
 
         if (response.ok) {
           const data = await response.json();
-          setPlaylists(data);
+          // Filter out playlists that don't have an image
+          const filteredPlaylists = data.filter(playlist => playlist?.images?.[0]?.url);
+          setPlaylists(filteredPlaylists);
         } else {
           const errorData = await response.json();
           setPlaylistsMessage(`Failed to fetch playlists: ${errorData.error}`);
@@ -201,29 +203,35 @@ export default function SpotifyPlaylists() {
             <p className="text-red-500">{playlistsMessage}</p>
           ) : playlists.length > 0 ? (
             <div className="w-full max-w-6xl mx-auto">
-              <Carousel responsive={responsive} arrows={true}>
-                {playlists.map((playlist, index) => {
-                  const playlistImageUrl = playlist.images?.[0]?.url;
+<Carousel responsive={responsive} arrows={true}>
+  {playlists.map((playlist, index) => {
+    const playlistImageUrl = playlist?.images?.[0]?.url;
 
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => fetchPlaylistTracks(playlist.id)}
-                      className="flex flex-col items-center p-4 bg-white rounded-md hover:shadow-lg transition-shadow duration-200"
-                    >
-                      {playlistImageUrl && (
-                        <img
-                          src={playlistImageUrl}
-                          alt={`Cover art for ${playlist.name}`}
-                          className="w-36 h-36 object-cover rounded-md mb-2"
-                        />
-                      )}
-                      <p className="text-black font-bold">{playlist.name}</p>
-                      <p className="text-black">{playlist.tracks.total} songs</p>
-                    </button>
-                  );
-                })}
-              </Carousel>
+    return (
+      <button
+        key={index}
+        onClick={() => fetchPlaylistTracks(playlist.id)}
+        className="flex flex-col items-center p-4 bg-white rounded-md hover:shadow-lg transition-shadow duration-200"
+      >
+        {playlistImageUrl && (
+          <img
+            src={playlistImageUrl}
+            alt={`Cover art for ${playlist.name}`}
+            className="w-36 h-36 object-cover rounded-md mb-2"
+          />
+        )}
+        <p
+          className="text-black font-bold text-ellipsis overflow-hidden whitespace-nowrap"
+          style={{ fontSize: '14px' }}
+        >
+          {playlist?.name?.slice(0, 25)}{playlist?.name?.length > 25 ? '...' : ''}
+        </p>
+        <p className="text-black text-sm">{playlist?.tracks?.total} songs</p>
+      </button>
+    );
+  })}
+</Carousel>
+
             </div>
           ) : (
             <p className="text-white">Loading your playlists...</p>
@@ -231,55 +239,56 @@ export default function SpotifyPlaylists() {
 
           {/* Tracks Section */}
           {selectedPlaylist && playlistTracks?.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-white text-2xl font-bold mb-4">Tracks</h2>
-              <div className="bg-black p-4 rounded-md max-h-[300px] overflow-y-auto">
-                <ul>
-                  {playlistTracks.map((track, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center text-white p-2 hover:bg-gray-700 rounded"
-                    >
-                      <button
-                        onClick={() => playTrack(track.track.uri)} // Play track on click
-                        className="flex items-center w-full"
-                      >
-                        {track.track?.album?.images[0]?.url && (
-                          <img
-                            src={track.track.album.images[0].url}
-                            alt={track.track.name}
-                            className="w-12 h-12 rounded mr-4"
-                          />
-                        )}
-                        <div>
-                          <p className="font-bold">{track.track?.name || 'Unknown Track'}</p>
-                          <p className="text-sm">
-                            {track.track?.artists?.map(artist => artist.name).join(', ') || 'Unknown Artist'}
-                          </p>
-                        </div>
-                      </button>
-                      {/* Review Button */}
-                      <div className="ml-auto">
-  <Link
-    href={{
-      pathname: '/Review',
-      query: { 
-        songName: track.track.name, 
-        artistName: track.track.artists.map(artist => artist.name).join(', '), // Join multiple artists
-        spotifyId: track.track.id 
-      },
-    }}
-  >
-    <button className="bg-blue-500 text-white px-4 py-2 rounded">Review</button>
-  </Link>
-</div>
-
-                    </li>
-                  ))}
-                </ul>
+  <div className="mt-8">
+    <h2 className="text-white text-2xl font-bold mb-4">Tracks</h2>
+    <div className="bg-black p-4 rounded-md max-h-[300px] overflow-y-auto">
+      <ul>
+        {playlistTracks.map((track, index) => (
+          <li
+            key={index}
+            className="flex items-center text-white p-2 hover:bg-gray-700 rounded"
+          >
+            <button
+              onClick={() => playTrack(track.track.uri)} // Play track on click
+              className="flex items-center w-full"
+            >
+              {track.track?.album?.images?.[0]?.url && (
+                <img
+                  src={track.track.album.images[0].url}
+                  alt={track.track.name}
+                  className="w-12 h-12 rounded mr-4"
+                />
+              )}
+              <div className="flex flex-col ml-2"> {/* Ensure text stays left-aligned */}
+                <p className="font-bold text-left truncate">{track.track?.name || 'Unknown Track'}</p>
+                <p className="text-sm text-left truncate">
+                  {track.track?.artists?.map(artist => artist.name).join(', ') || 'Unknown Artist'}
+                </p>
               </div>
+            </button>
+            {/* Review Button */}
+            <div className="ml-auto">
+              <Link
+                href={{
+                  pathname: '/Review',
+                  query: { 
+                    songName: track.track.name, 
+                    artistName: track.track.artists.map(artist => artist.name).join(', '), // Join multiple artists
+                    spotifyId: track.track.id 
+                  },
+                }}
+              >
+                <button className="bg-blue-500 text-white px-4 py-2 rounded">Review</button>
+              </Link>
             </div>
-          )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+)}
+
+
         </div>
       </div>
     </div>
