@@ -24,6 +24,7 @@ export default function HomePage() {
   const [recentlyPlayedAlbums, setRecentlyPlayedAlbums] = useState([]);
   const [albumsMessage, setAlbumsMessage] = useState('');
   const [recentlyListenedArtists, setRecentlyListenedArtists] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
 
 
   // Carousel item class with updated styles
@@ -72,21 +73,59 @@ export default function HomePage() {
     setIsNavOpen(!isNavOpen);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchTerm) => {
+    if (!searchTerm) {
+      setResults(null);
+      setError(null);
+      return;
+    }
+
     try {
-        const response = await searchSpotify(query);
-        if (response.error) {
-            setError(response.error);
-        } else {
-            setResults(response);
-            setError(null);
-        }
+      const accessToken = sessionStorage.getItem("spotifyAccessToken");
+
+      if (!accessToken) {
+        setError("Spotify access token not found. Please login with Spotify.");
+        return;
+      }
+
+      const response = await fetch(`/api/searchSpotifyZachReviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ query: searchTerm }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setResults(data);
+        setError(null);
+      } else {
+        const errorData = await response.json();
+        setError(`Failed to fetch search results: ${errorData.error}`);
+      }
     } catch (err) {
-        console.error('Search error:', err);
-        setError('An unexpected error occurred while searching.');
+      console.error("Search error:", err);
+      setError("An unexpected error occurred while searching.");
     }
   };
 
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      handleSearch(query);
+      setShowDropdown(true);
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [query]);
+
+  const handleSelectSong = (track) => {
+    // Handle song selection
+    console.log("Selected Song:", track);
+    setQuery('');  // Clear the query
+    setShowDropdown(false); // Hide the dropdown
+  };
   //useEffect hook to fetch recently played songs 
   useEffect(() => {
     const fetchRecentlyPlayed = async () => {
@@ -220,6 +259,9 @@ export default function HomePage() {
     fetchRecentlyPlayedAlbums();
   }, []);
 
+
+  
+
   return (
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
       {/* Left Side Navigation Bar */}
@@ -271,32 +313,40 @@ export default function HomePage() {
         </div>
   
   {/*can delete this part if not using search on homepage */}
-        <div className="mt-8">
-          <h2 className="text-white text-2xl">Spotify Search</h2>
-            <input
-              type="text"
-              placeholder="Search for a song, artist, or album..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="p-2 rounded border border-gray-300 w-full mt-2"
-            />
-            <button onClick={handleSearch} className="mt-2 bg-blue-500 text-white p-2 rounded">Search</button>
+  <div className="mt-8 relative">
+      <h2 className="text-white text-2xl">Spotify Search</h2>
+      <input
+        type="text"
+        placeholder="Search for a song, artist, or album..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="p-2 rounded border border-gray-300 w-full mt-2"
+      />
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
-            {results && results.tracks && (
-              <div className="mt-4">
-                <h2 className="text-white text-xl">Search Results</h2>
-                <ul className="text-white">
-                  {results.tracks.items.map((track) => (
-                    <li key={track.id} className="mt-2">
-                      {track.name} by {track.artists.map((artist) => artist.name).join(', ')}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-        </div>
+      {/* Dropdown of search results */}
+      {showDropdown && results && results.tracks && results.tracks.items && results.tracks.items.length > 0 && (
+        <ul className="absolute w-full bg-white mt-2 border border-gray-300 shadow-md rounded-md z-10 max-h-64 overflow-y-auto">
+          {results.tracks.items.map((track) => (
+            <li key={track.id} className="w-full">
+              <Link
+                href={{
+                  pathname: '/Review',
+                  query: { 
+                    songName: track.name,
+                    artistName: track.artists.map((artist) => artist.name).join(', '),
+                    spotifyId: track.id,
+                  },
+                }}
+                className="block p-3 hover:bg-gray-200 cursor-pointer" // Ensure the whole list item is clickable
+              >
+                <span className="text-black">{track.name} by {track.artists.map((artist) => artist.name).join(', ')}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
         {/*can delete this part if not using search on homepage */}
 
         {/* Carousel Section - Recently Played Songs */}
