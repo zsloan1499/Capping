@@ -11,7 +11,7 @@ export async function GET(req) {
     }
 
     // Fetch user's top artists from Spotify, limited to 9 for testing purposes 
-    const response = await fetch('https://api.spotify.com/v1/me/top/artists?limit=9', {
+    const response = await fetch('https://api.spotify.com/v1/me/top/artists', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
