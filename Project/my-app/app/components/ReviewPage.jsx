@@ -213,7 +213,7 @@ const handleFormSubmit = async (e) => {
           <h2 className="text-white text-2xl">Spotify Search</h2>
           <input
             type="text"
-            placeholder="Search for a song, artist, or album..."
+            placeholder="Search for a song or artist"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="p-2 rounded border border-gray-300 w-full mt-2"
