@@ -216,9 +216,12 @@ export default function SpotifyPlaylists() {
           </button>
           {isNavOpen && (
             <>
-              <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
-              <Link href="/Playlists" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
-              <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
+            <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">Home</Link>
+            <Link href="/Playlists" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
+            <Link href="/Review" className="text-white p-2 hover:bg-gray-700 rounded">Reviews</Link>
+            <Link href="/Social" className="text-white p-2 hover:bg-gray-700 rounded">Social</Link>
+            <Link href="/Activity" className="text-white p-2 hover:bg-gray-700 rounded w-full">Activity</Link>
+            <Link href="/Global" className="text-white p-2 hover:bg-gray-700 rounded">Global</Link>
             </>
           )}
         </nav>
