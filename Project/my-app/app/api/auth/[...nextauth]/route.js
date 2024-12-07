@@ -1,4 +1,3 @@
-
 import NextAuth from 'next-auth/next';
 import CredentialsProvider from "next-auth/providers/credentials";
 import { User } from "../../../../models/User"; 
@@ -6,9 +5,12 @@ import { connectMongoDB } from "../../../../lib/mongodb";
 import bcrypt from "bcryptjs";
 import SpotifyProvider from "next-auth/providers/spotify";
 import GoogleProvider from 'next-auth/providers/google';
+import crypto from "crypto";
+import { sendOtpEmail } from "./email.js";
 
 const ZACH_GOOGLE_CLIENT_ID = process.env.ZACH_GOOGLE_CLIENT_ID;
 const ZACH_GOOGLE_SECRET = process.env.ZACH_GOOGLE_SECRET;
+
 
 export const authOptions = {
     providers: [
@@ -20,29 +22,62 @@ export const authOptions = {
             name: "credentials",
             credentials: {},
             async authorize(credentials) {
-                const { email, password } = credentials;
-
+                const { email, password, otp } = credentials;
+            
                 try {
+                    console.log("Authorization process started...");
                     await connectMongoDB();
+                    console.log("Connected to MongoDB");
+            
                     const user = await User.findOne({ email });
-
                     if (!user) {
-                        console.log("User not found");
-                        return null;
+                        console.log("User not found.");
+                        throw new Error(JSON.stringify({ message: "Invalid credentials. Please try again." }));
                     }
-
-                    // Compare password if user logs in via credentials
-                    const passwordsMatch = await bcrypt.compare(password, user.password);
-
-                    if (!passwordsMatch) {
-                        console.log("Invalid password");
-                        return null;
+            
+                    // Validate password if no OTP provided
+                    if (!otp) {
+                        if (!password || !(await bcrypt.compare(password, user.password))) {
+                            console.log("Invalid password provided.");
+                            throw new Error(JSON.stringify({ message: "Invalid credentials. Please try again." }));
+                        }
+            
+                        console.log("No OTP provided. Generating OTP...");
+                        const generatedOtp = crypto.randomInt(100000, 999999).toString();
+                        user.otp = generatedOtp;
+                        user.otpExpires = new Date(Date.now() + 5 * 60 * 1000); // OTP expires in 5 minutes
+                        await user.save();
+            
+                        await sendOtpEmail(email, generatedOtp);
+                        console.log("OTP sent successfully:", generatedOtp);
+            
+                        // Return specific message to prompt OTP input
+                        throw new Error(JSON.stringify({ message: "OTP sent to your email. Please re-submit with the OTP." }));
                     }
-
-                    return user; // Return the user object
+            
+                    // If OTP is provided, validate it
+                    if (otp !== user.otp) {
+                        console.log("Stored OTP is ", user.otp)
+                        console.log("Invalid OTP provided.");
+                        throw new Error(JSON.stringify({ message: "Invalid OTP. Please try again." }));
+                    }
+            
+                    if (user.otpExpires < Date.now()) {
+                        console.log("OTP has expired.");
+                        throw new Error(JSON.stringify({ message: "OTP has expired. Please log in again." }));
+                    }
+            
+                    console.log("OTP validated successfully.");
+                    user.otp = null; // Clear OTP after successful validation
+                    user.otpExpires = null;
+                    await user.save();
+            
+                    // Return the user object for successful login
+                    return { id: user._id, email: user.email };
+            
                 } catch (error) {
-                    console.error("Authorization error:", error);
-                    return null;
+                    console.error("Error during authorization:", error.message);
+                    throw new Error(error.message);
                 }
             },
         }),
@@ -65,23 +100,20 @@ export const authOptions = {
     },
     callbacks: {
         async signIn({ account, profile }) {
-            // Handle user creation if the provider is Google or Spotify
+            console.log("Sign-in process triggered...");
             if (account.provider === "google" || account.provider === "spotify") {
                 try {
                     await connectMongoDB();
-                    console.log("Connected to MongoDB");
+                    console.log("Connected to MongoDB during sign-in");
 
-                    // Check if user already exists in the database
                     let user = await User.findOne({ email: profile.email });
 
-                    // If user doesn't exist, create a new one
                     if (!user) {
+                        console.log("Creating a new user for sign-in...");
                         const fName = profile.given_name || profile.name?.split(" ")[0];
                         const lName = profile.family_name || profile.name?.split(" ")[1] || "";
-                        const username = profile.email.split("@")[0];  // Use part of email for username
-                  
+                        const username = profile.email.split("@")[0];
 
-                        // Call the register API to create the user
                         const res = await fetch('../../register', {
                             method: "POST",
                             headers: {
@@ -93,51 +125,53 @@ export const authOptions = {
                                 username,
                                 email: profile.email,
                                 password: "", // No password for OAuth users
-                                profilePhoto: profile.picture || "", // Set profile photo
+                                profilePhoto: profile.picture || "",
                             })
                         });
 
-                        // Check if the user was created successfully
                         if (res.ok) {
                             const newUser = await res.json();
                             console.log('New user created via API:', newUser);
-                            return { ...newUser, profilePhoto: newUser.profilePhoto }; // Return user with profilePhoto
+                            return { ...newUser, profilePhoto: newUser.profilePhoto };
                         } else {
-                            console.error('Failed to create user:', await res.json());
-                            return null; // Prevent sign-in if user creation fails
+                            console.error('Failed to create user during sign-in:', await res.json());
+                            return null;
                         }
                     } else {
-                        console.log('User already exists:', user);
-                        return { ...user, profilePhoto: user.profilePhoto }; // Return existing user with profilePhoto
+                        console.log('User already exists during sign-in:', user);
+                        return { ...user, profilePhoto: user.profilePhoto };
                     }
                 } catch (error) {
-                    console.error('Error handling sign in:', error);
+                    console.error('Error during sign-in:', error);
+                    return null;
                 }
             }
 
-            return true; // Return true for other cases
+            return true;
         },
 
         async jwt({ token, user }) {
+            console.log("JWT callback triggered...");
             if (user) {
                 token.id = user._id;
                 token.email = user.email;
                 token.fName = user.fName;
                 token.lName = user.lName;
-                token.username = user.username; // Ensure updated username
+                token.username = user.username;
                 token.profilePhoto = user.profilePhoto;
             }
             return token;
         },
         
         async session({ session, token }) {
+            console.log("Session callback triggered...");
             if (token) {
                 session.user = {
                     id: token.id,
                     email: token.email,
                     fName: token.fName,
                     lName: token.lName,
-                    username: token.username, // Updated username
+                    username: token.username,
                     profilePhoto: token.profilePhoto,
                 };
             }

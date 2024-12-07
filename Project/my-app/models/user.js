@@ -133,6 +133,14 @@ const userSchema = new Schema({
         type: String,
         required: false,
     },
+    otp: {
+        type: String,
+        required: false,
+    },
+    otpExpires: {
+        type: Date,
+        required: false,
+    },
     profilePhoto: {
         type: String,
         required: true,
