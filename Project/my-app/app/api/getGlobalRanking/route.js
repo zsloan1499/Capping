@@ -1,6 +1,6 @@
+import { NextResponse } from 'next/server';
 import { connectMongoDB } from "../../../lib/mongodb";
-import { Song, Review } from "../../../models/User"; // Ensure models are imported
-import { NextResponse } from "next/server";
+import { User,Song,Review } from "../../../models/User";
 
 export async function GET(req) {
   try {
@@ -36,8 +36,11 @@ export async function GET(req) {
     // Step 4: Sort the songs by their average rating in descending order (highest first)
     songsWithAverageRatings.sort((a, b) => b.averageRating - a.averageRating);
 
-    // Step 5: Return the sorted list of songs with their average ratings
-    return NextResponse.json(songsWithAverageRatings);
+    // Step 5: Limit the list to the top 50 songs
+    const top50Songs = songsWithAverageRatings.slice(0, 50);
+
+    // Step 6: Return the sorted and limited list of songs with their average ratings
+    return NextResponse.json(top50Songs);
   } catch (error) {
     console.error("Error:", error);
     // Return an error response with the error message
