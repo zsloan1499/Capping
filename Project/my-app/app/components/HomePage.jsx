@@ -288,11 +288,11 @@ export default function HomePage() {
       {/* Main Content Area */}
       <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>
         <title>Melodi</title>
-        <div className="flex items-center justify-between">
-          <h1 className="text-white text-3xl font-bold">Melodi</h1>
+        <div className="flex items-center justify-center h-20">
+          <h1 className="text-white text-6xl font-bold text-right">Melodi</h1>
   
           {/* Icons and Profile Photo */}
-          <div className="flex items-center space-x-4">
+          <div className="absolute top-4 right-4 flex items-center space-x-4">
             {/* Profile Photo */}
             <Link href="/UserInfo">
               <img src={session?.user?.profilePhoto || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"} alt="User Profile Photo" className="w-6 h-6" />
@@ -315,7 +315,7 @@ export default function HomePage() {
   
   {/*can delete this part if not using search on homepage */}
   <div className="mt-8 relative">
-      <h2 className="text-white text-2xl">Spotify Search</h2>
+      <h2 className="text-white text-2xl">Review a Song</h2>
       <input
         type="text"
         placeholder="Search for a song, artist, or album..."
@@ -350,9 +350,12 @@ export default function HomePage() {
     </div>
         {/*can delete this part if not using search on homepage */}
 
+        <hr className="my-8 border-customBlue" /> {/* Line break or divider */}
+
+
         {/* Carousel Section - Recently Played Songs */}
 <div style={carouselContainerStyle} className="w-full mt-8">
-  <h4 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Your Recently Listened Songs</h4>
+  <h4 className="text-white text-2xl font-bold mb-4 border-b-2 border-blue-500 pb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Recently Played Songs</h4>
   {message && <p className="text-red-500">{message}</p>}
   {recentlyPlayedSongs.length > 0 ? (
     <Carousel responsive={responsive} arrows={true} showDots={true} dotListClass="custom-dot-list-style">
@@ -411,11 +414,69 @@ export default function HomePage() {
   ) : (
     !message && <p className="text-white">Loading recently played songs...</p>
   )}
+  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-blue-500 pb-2"></h2>
+
 </div>
-  
-       {/* Carousel Section - Top Artists */}
+
+<hr className="my-8 border-customBlue" /> {/* Line break or divider */}
+
+            {/* Carousel Section - Your Playlists */}
 <div style={carouselContainerStyle} className="w-full mt-8">
-  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Your Top Artists</h2>
+  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-blue-500 pb-2">Your Playlists</h2>
+      {playlistsMessage && <p className="text-red-500">{playlistsMessage}</p>}
+      {userPlaylists?.length > 0 ? (
+        <Carousel
+      responsive={responsive}
+      arrows={true}
+      showDots={true}
+      dotListClass="custom-dot-list-style"
+    >
+  {userPlaylists
+    .filter(playlist => playlist?.images?.[0]?.url) // Only include playlists with images
+    .map((playlist, index) => {
+      // Ensure we have the necessary data for each playlist
+      const playlistImageUrl = playlist?.images?.[0]?.url;
+      const playlistName = playlist?.name || 'Untitled Playlist'; // Provide a fallback name
+      const trackCount = playlist?.tracks?.total || 0;
+
+      return (
+        <a
+          key={index}
+          className={carouselItemClass}
+        >
+          {playlistImageUrl ? (
+            <img
+              src={playlistImageUrl}
+              alt={`Cover art for ${playlistName}`}
+              className="w-40 h-40 object-cover rounded-full mb-2"
+            />
+          ) : (
+            <div className="w-40 h-40 bg-gray-800 flex items-center justify-center rounded-full mb-2">
+              <span className="text-gray-500">No Cover</span>
+            </div>
+          )}
+          <p className="text-black text-center font-bold text-sm m-0 truncate w-full">
+            {playlistName}
+          </p>
+          <p className="text-black text-center text-xs m-0 truncate w-full">
+            {trackCount} songs
+          </p>
+        </a>
+      );
+    })}
+</Carousel>
+
+) : (
+  !playlistsMessage && <p className="text-white">Loading your playlists...</p>
+)}
+<h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-blue-500 pb-2"></h2>
+</div>
+
+<hr className="my-8 border-customBlue" /> {/* Line break or divider */}
+  
+              {/* Carousel Section - Top Artists */}
+<div style={carouselContainerStyle} className="w-full mt-8">
+  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-blue-500 pb-2">Your Top Artists</h2>
   {artistsMessage && <p className="text-red-500">{artistsMessage}</p>}
   {topArtists.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}showDots={true}
@@ -456,11 +517,16 @@ export default function HomePage() {
   ) : (
     !artistsMessage && <p className="text-white">Loading top artists...</p>
   )}
+
+<h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-blue-500 pb-2"></h2>
+
 </div>
+
+<hr className="my-8 border-customBlue" /> {/* Line break or divider */}
 
 {/* Carousel Section - Recently Played Albums */}
 <div style={carouselContainerStyle} className="w-full mt-8 mb-8">
-  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Recently Played Albums</h2>
+  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-blue-500 pb-2">Recently Played Albums</h2>
   {albumsMessage && <p className="text-red-500">{albumsMessage}</p>}
   {recentlyPlayedAlbums.length > 0 ? (
     <Carousel responsive={responsive} arrows={true}showDots={true}
@@ -501,63 +567,11 @@ export default function HomePage() {
     !albumsMessage && <p className="text-white">Loading recently played albums...</p>
   )}
   
+  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-blue-500 pb-2"></h2>
 
 </div>
 
- {/* Carousel Section - Your Playlists */}
- <div style={carouselContainerStyle} className="w-full mt-8">
-  <h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2">Your Playlists</h2>
-  {playlistsMessage && <p className="text-red-500">{playlistsMessage}</p>}
-  {userPlaylists?.length > 0 ? (
-    <Carousel
-  responsive={responsive}
-  arrows={true}
-  showDots={true}
-  dotListClass="custom-dot-list-style"
->
-  {userPlaylists
-    .filter(playlist => playlist?.images?.[0]?.url) // Only include playlists with images
-    .map((playlist, index) => {
-      // Ensure we have the necessary data for each playlist
-      const playlistImageUrl = playlist?.images?.[0]?.url;
-      const playlistName = playlist?.name || 'Untitled Playlist'; // Provide a fallback name
-      const trackCount = playlist?.tracks?.total || 0;
-
-      return (
-        <a
-          key={index}
-          className={carouselItemClass}
-        >
-          {playlistImageUrl ? (
-            <img
-              src={playlistImageUrl}
-              alt={`Cover art for ${playlistName}`}
-              className="w-40 h-40 object-cover rounded-full mb-2"
-            />
-          ) : (
-            <div className="w-40 h-40 bg-gray-800 flex items-center justify-center rounded-full mb-2">
-              <span className="text-gray-500">No Cover</span>
-            </div>
-          )}
-          <p className="text-black text-center font-bold text-sm m-0 truncate w-full">
-            {playlistName}
-          </p>
-          <p className="text-black text-center text-xs m-0 truncate w-full">
-            {trackCount} songs
-          </p>
-        </a>
-      );
-    })}
-</Carousel>
-
-  
-
-
-) : (
-  !playlistsMessage && <p className="text-white">Loading your playlists...</p>
-)}
-<h2 className="text-white text-2xl font-bold mb-4 border-b-2 border-pink-500 pb-2"></h2>
-</div>
+<hr className="my-8 border-customBlue" /> {/* Line break or divider */}
 
     {/* Footer */}
     <Footer />
