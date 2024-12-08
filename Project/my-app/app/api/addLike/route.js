@@ -7,26 +7,29 @@ export async function POST(req) {
   try {
     await connectMongoDB();
 
+    //take the review and userid
     const { reviewId, userId } = await req.json();
     if (!reviewId || !userId) {
       return NextResponse.json({ error: "Review ID and User ID are required" }, { status: 400 });
     }
 
+    //idk why it is crossed out?
     const userObjectId = new mongoose.Types.ObjectId(userId);
+    //find the review to like
     const review = await Review.findById(reviewId).populate("likes", "_id");
 
     if (!review) {
       return NextResponse.json({ error: "Review not found" }, { status: 404 });
     }
 
-    // Ensure `likes` is always an array
+    // Ensure the review likes is always an array of user objects
     review.likes = review.likes || [];
 
     // Check if the user has already liked the review
     const userHasLiked = review.likes.some((like) => like.equals(userObjectId));
 
     if (userHasLiked) {
-      // If the user has already liked, remove the like
+      // if the user has already liked, remove the like
       review.likes = review.likes.filter((like) => !like.equals(userObjectId));
       await review.save();
       return NextResponse.json({

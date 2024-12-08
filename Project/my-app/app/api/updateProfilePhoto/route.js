@@ -1,7 +1,8 @@
-import { connectMongoDB } from "../../../lib/mongodb"; // Import your MongoDB connection function
+import { connectMongoDB } from "../../../lib/mongodb"; 
 import { NextResponse } from "next/server";
-import { User } from "../../../models/User"; // Adjust the path if necessary
+import { User } from "../../../models/User"; 
 
+//change the url in the database and then it updates itself again
 export async function POST(req) {
     try {
         await connectMongoDB(); // Connect to MongoDB

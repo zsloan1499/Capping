@@ -1,8 +1,9 @@
-// api/getFriendReviews/route.js
+
 import { connectMongoDB } from "../../../lib/mongodb";
 import { User, Review } from "/models/User";
 import { NextResponse } from "next/server";
 
+//will get the reviews for a specific friend
 export async function POST(req) {
     await connectMongoDB();
 
@@ -16,7 +17,7 @@ export async function POST(req) {
 
         // Query reviews by userId
         const reviews = await Review.find({ user: user._id })
-            .populate('song', 'name artist') // Changed `title` to `name` for song name
+            .populate('song', 'name artist') 
             .populate('user', 'username');
 
         return NextResponse.json({ reviews });

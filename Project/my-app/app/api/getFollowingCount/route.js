@@ -6,7 +6,7 @@ export async function POST(req) {
     try {
         await connectMongoDB();
 
-        const { userId } = await req.json();  // Expecting userId in the request body
+        const { userId } = await req.json();  //  data from request
 
         // Validate userId
         if (!userId) {
@@ -14,7 +14,7 @@ export async function POST(req) {
         }
 
         // Find user by userId
-        const user = await User.findById(userId);  // Using userId instead of username
+        const user = await User.findById(userId); 
 
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });

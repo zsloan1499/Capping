@@ -1,6 +1,7 @@
-// app/api/getRecentlyPlayedAlbums/route.js
+
 import { NextResponse } from 'next/server';
 
+//spotify api for the recently played albums
 export async function GET(req) {
   try {
     const accessToken = req.headers.get('Authorization')?.split(' ')[1];

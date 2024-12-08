@@ -1,17 +1,20 @@
+//imports
 import { connectMongoDB } from "../../../lib/mongodb";
 import { User } from "../../../models/User";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
     try {
+        //connect to the database
         await connectMongoDB();
 
+        //take the userid and the freind username
         const { userId, friendUsername } = await req.json();
 
         console.log("Current User ID:", userId);
         console.log("Adding Following Username:", friendUsername);
 
-        // Validate userId
+        // Validate there is userId
         if (!userId) {
             return NextResponse.json({ error: "User ID is required" }, { status: 400 });
         }
@@ -45,7 +48,8 @@ export async function POST(req) {
 
         // Check if the user is already in the following list
         if (!currentUser.following.includes(friendUser._id)) {
-            // Add friend's ObjectId to current user's following array
+
+            // add friend's ObjectId to current user's following array
             currentUser.following.push(friendUser._id);
 
             // Add current user's ObjectId to friend's followers array

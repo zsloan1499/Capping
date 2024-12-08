@@ -6,7 +6,7 @@ export async function POST(req) {
     try {
         await connectMongoDB();
 
-        const { userId } = await req.json();  // Expecting userId in the request body
+        const { userId } = await req.json();  //  userId in the request body
 
         // Validate userId
         if (!userId) {

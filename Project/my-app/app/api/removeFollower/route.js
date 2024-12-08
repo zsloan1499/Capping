@@ -1,8 +1,8 @@
-import { connectMongoDB } from "../../../lib/mongodb"; // Reusing MongoDB connection
-import { User } from "../../../models/User";  // Import the User model for MongoDB interactions
-import { NextResponse } from 'next/server';  // Import NextResponse for correct response handling
+import { connectMongoDB } from "../../../lib/mongodb";
+import { User } from "../../../models/User";  
+import { NextResponse } from 'next/server';  
 
-export async function POST(req) {  // Only pass req in the new Next.js function style
+export async function POST(req) {  
     try {
         const { followerId, userId } = await req.json();  // Extract followerId and userId from the request body
 
@@ -12,7 +12,7 @@ export async function POST(req) {  // Only pass req in the new Next.js function 
             return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
         }
 
-        // Connect to MongoDB
+
         await connectMongoDB();
         console.log("Connected to MongoDB");
 

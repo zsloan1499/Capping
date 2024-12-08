@@ -1,6 +1,7 @@
 // app/api/getRecentlyPlayedArtists/route.js
 import { NextResponse } from 'next/server';
 
+//get the recently played artisits for spotify api
 export async function GET(req) {
   try {
     const accessToken = req.headers.get('Authorization')?.split(' ')[1];

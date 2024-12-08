@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+//spotify apiu to get playlist tracks/song in the playlist
 export async function POST(req) {
   try {
     const { playlistId } = await req.json(); // Get the playlistId from the request body

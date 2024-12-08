@@ -6,7 +6,7 @@ export async function POST(req) {
     await connectMongoDB();
     const { userId, friendUsername } = await req.json();
 
-    // Find the user document of the friend using the username
+    // Find the user  of the friend using the username
     const friend = await User.findOne({ username: friendUsername }).select("_id");
     if (!friend) {
         return NextResponse.json({ error: "Friend not found" }, { status: 404 });

@@ -9,6 +9,7 @@ export async function POST(req) {
 
         // Check if the username exists
         const existingUsername = await User.findOne({ username }).select("_id");
+        
 
         if (existingUsername) {
             return NextResponse.json({ usernameExists: true });

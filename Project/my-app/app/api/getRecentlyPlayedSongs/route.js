@@ -1,6 +1,7 @@
-// api/getRecentlyPlayedSongs/route.js
+
 import { NextResponse } from "next/server";
 
+//spotify recently played songs
 export async function GET(req) {
     try {
     //get access token

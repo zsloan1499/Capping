@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { connectMongoDB } from "../../../lib/mongodb";
 import { User, Song, Review, Playlist } from "../../../models/User"; 
 
-
+//makes a new account
 export async function POST(req) {
     try {
         const { fName, lName, email, username, password } = await req.json();

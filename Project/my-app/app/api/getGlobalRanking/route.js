@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { connectMongoDB } from "../../../lib/mongodb";
 import { User,Song,Review } from "../../../models/User";
 
+//will return the top 50 rated songs
 export async function GET(req) {
   try {
-    // Step 1: Connect to the MongoDB database
+    //connect to mongo
     await connectMongoDB();
     console.log("Connected to MongoDB");
 
-    // Step 2: Fetch all songs from the database
+    //Fetch all songs from the database
     const songs = await Song.find({});
 
     // If no songs are found, return an error response
@@ -16,7 +17,7 @@ export async function GET(req) {
       return NextResponse.json({ message: "No songs found" }, { status: 404 });
     }
 
-    // Step 3: For each song, fetch reviews and calculate the average rating
+    //For each song, fetch reviews and calculate the average rating
     const songsWithAverageRatings = await Promise.all(songs.map(async (song) => {
       // Fetch reviews for the song by songId
       const reviews = await Review.find({ song: song._id });
@@ -33,13 +34,13 @@ export async function GET(req) {
       };
     }));
 
-    // Step 4: Sort the songs by their average rating in descending order (highest first)
+    // Sort the songs by their average rating in descending order
     songsWithAverageRatings.sort((a, b) => b.averageRating - a.averageRating);
 
-    // Step 5: Limit the list to the top 50 songs
+    // Limit the list to the top 50 songs
     const top50Songs = songsWithAverageRatings.slice(0, 50);
 
-    // Step 6: Return the sorted and limited list of songs with their average ratings
+    // Return the sorted and limited list of songs with their average ratings
     return NextResponse.json(top50Songs);
   } catch (error) {
     console.error("Error:", error);

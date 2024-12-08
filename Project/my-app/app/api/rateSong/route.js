@@ -2,6 +2,8 @@ import { connectMongoDB } from "../../../lib/mongodb";
 import { Review, Song } from "../../../models/User"; // Import Song model from User.js
 import { NextResponse } from "next/server";
 
+
+//Not used anymore, made a page to review the song instead of just rating it
 export async function POST(req) {
     try {
         await connectMongoDB();

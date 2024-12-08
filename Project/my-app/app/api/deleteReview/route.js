@@ -1,5 +1,5 @@
 import { connectMongoDB } from "/lib/mongodb";
-import { User, Review } from "/models/User";  // Ensure you're importing the User model
+import { User, Review } from "/models/User"; 
 import { NextResponse } from "next/server";
 
 export async function DELETE(req) {

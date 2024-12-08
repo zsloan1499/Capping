@@ -1,13 +1,14 @@
-'use client'; // app/spotifyPlaylists.js
+'use client';
 
-import Head from 'next/head'; // Import Head from next/head
+import Head from 'next/head'; 
 import { useEffect, useState } from 'react';
-import { useSession, signIn } from 'next-auth/react'; // Import session handling
+import { useSession, signIn } from 'next-auth/react'; 
 import Link from 'next/link';
 import Carousel from 'react-multi-carousel';
 import "react-multi-carousel/lib/styles.css";
 import { BellIcon, CogIcon } from '@heroicons/react/24/solid';
 
+//Playlist Page
 export default function SpotifyPlaylists() {
   const { data: session } = useSession(); // Access the user session
   const [playlists, setPlaylists] = useState([]); // For user playlists
@@ -16,8 +17,8 @@ export default function SpotifyPlaylists() {
   const [playlistTracks, setPlaylistTracks] = useState([]);
   const [playlistsMessage, setPlaylistsMessage] = useState('');
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [player, setPlayer] = useState(null); // Spotify player instance
-  const [isPlaying, setIsPlaying] = useState(false); // Playback state
+  const [player, setPlayer] = useState(null); // Spotify player instance, no longer used
+  const [isPlaying, setIsPlaying] = useState(false); // Playback state, no longer used
   const [genres, setGenres] = useState([]); // To store genres from recently played songs
 
   const toggleNav = () => setIsNavOpen(!isNavOpen);
@@ -32,7 +33,7 @@ export default function SpotifyPlaylists() {
           setPlaylistsMessage('Spotify access token not found. Please login with Spotify.');
           return;
         }
-  
+        //route call, send spotify access token
         const response = await fetch('/api/getRecentlyPlayedSongsReviews', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -52,7 +53,7 @@ export default function SpotifyPlaylists() {
             return acc;
           }, []);
   
-          setGenres(fetchedGenres); // Store the unique genres
+          setGenres(fetchedGenres); // Store the unique genres from the recently fetched genres
           setPlaylistsMessage(''); // Clear the message
         } else {
           const errorData = await response.json();
@@ -74,6 +75,7 @@ export default function SpotifyPlaylists() {
         const accessToken = sessionStorage.getItem('spotifyAccessToken');
         if (!accessToken || genres.length === 0) return; // Don't fetch if no genres are available
   
+        //route call to get playlist, send access token
         const response = await fetch('/api/getSuggestedPlaylists', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -97,7 +99,7 @@ export default function SpotifyPlaylists() {
     fetchSuggestedPlaylists();
   }, [genres]); // Trigger when genres are fetched
 
-  // Fetch user playlists
+  // Fetch user playlists from spotify, send access keys
   useEffect(() => {
     const fetchUserPlaylists = async () => {
       try {
@@ -127,7 +129,7 @@ export default function SpotifyPlaylists() {
     fetchUserPlaylists();
   }, [session]);
 
-  // Fetch tracks for a specific playlist
+  // Fetch tracks for a specific playlist when the playlist is clicked on
   const fetchPlaylistTracks = async (playlistId) => {
     try {
       const accessToken = sessionStorage.getItem('spotifyAccessToken');
@@ -158,7 +160,7 @@ export default function SpotifyPlaylists() {
     }
   };
 
-  // Play track function
+  // Play track function, no longer used
   const playTrack = (trackUri) => {
     if (player) {
       player.play({

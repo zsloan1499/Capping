@@ -16,9 +16,9 @@ export async function POST(req) {
 
         // Find the user's reviews by their userId
         const reviews = await Review.find({ user: userId })
-            .populate("song", "name artist")  // Populate song data
-            .populate("user", "username")    // Populate user data
-            .select("_id reviewText rating song user likes likedBy createdAt") // Select relevant fields including likes and likedBy
+            .populate("song", "name artist")  // Populate song 
+            .populate("user", "username")    // Populate user 
+            .select("_id reviewText rating song user likes likedBy createdAt") // include likes array
             .sort({ createdAt: -1 });        // Sort by most recent reviews first
 
         if (!reviews || reviews.length === 0) {
@@ -33,8 +33,8 @@ export async function POST(req) {
             songName: review.song.name,
             songArtist: review.song.artist,
             username: review.user.username,
-            likes: review.likes || 0, // Ensure likes has a fallback value
-            likedBy: review.likedBy || [], // List of users who liked the review (if applicable)
+            likes: review.likes || 0, 
+            likedBy: review.likedBy || [], 
             createdAt: review.createdAt,
         }));
 

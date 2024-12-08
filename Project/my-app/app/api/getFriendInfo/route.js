@@ -1,15 +1,15 @@
 import { connectMongoDB } from "../../../lib/mongodb";
-import { User, Review } from "../../../models/User"; // Assuming Review model exists
+import { User, Review } from "../../../models/User"; 
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
     try {
-        // Connect to MongoDB
+        // Connect to mongo
         await connectMongoDB();
 
-        const { username } = await req.json();  // Extract username from the request body
+        const { username } = await req.json();  //  username from the request 
 
-        // Validate username
+        // valid username
         if (!username) {
             return NextResponse.json({ error: "A valid username is required" }, { status: 400 });
         }

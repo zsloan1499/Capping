@@ -2,6 +2,7 @@ import { connectMongoDB } from "../../../lib/mongodb";
 import { User } from "../../../models/User";
 import { NextResponse } from "next/server";
 
+//follow or unfollow a user
 export async function POST(req) {
     await connectMongoDB();
     const { userId, friendUsername } = await req.json();

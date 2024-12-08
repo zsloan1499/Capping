@@ -2,6 +2,7 @@ import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
 import { User } from "../../../models/User"; 
 
+//grab the url for the profile photo
 export async function POST(req) {
     try {
         await connectMongoDB();

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+//gets a song by id, not used anymore(dont use anymore/not used anymore)
 export async function GET(req) {
     try {
         // Retrieve the access token from the client’s session storage

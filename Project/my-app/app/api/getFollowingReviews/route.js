@@ -1,15 +1,15 @@
 import { connectMongoDB } from "/lib/mongodb";
-import { User, Review } from "/models/User"; // Importing the required models
+import { User, Review } from "/models/User"; 
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
     try {
         await connectMongoDB();
 
-        // Parse the userId from the request body
+        // get the userId for the request
         const { userId } = await req.json();
 
-        // Validate userId
+        // valid userId?
         if (!userId) {
             return NextResponse.json({ error: "A valid userId is required" }, { status: 400 });
         }

@@ -1,8 +1,10 @@
-//api/playlistID/route.js
+
 import { connectMongoDB } from '/lib/mongodb';
 import Playlist from '../../models/playlist';
 import { getSession } from 'next-auth/react';
 
+//i dont know who did this one so I am guessing what it does
+// oh i see, its to add a song to the playlist after you find/search for it, this ended up not working and is not used anymore
 export default async function handler(req, res) {
   const session = await getSession({ req });
   if (!session) return res.status(401).json({ error: 'Unauthorized' });

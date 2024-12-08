@@ -7,6 +7,7 @@ export async function POST(req) {
         await connectMongoDB();
         const { userId } = await req.json(); // Get userId from request body
 
+        // use the Useruid to get their followers their username and profile photos
         const user = await User.findById(userId).populate("followers", "username profilePhoto");
 
         if (!user) {

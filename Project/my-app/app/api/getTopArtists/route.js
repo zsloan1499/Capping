@@ -1,6 +1,7 @@
 // app/api/getTopArtists/route.js
 import { NextResponse } from 'next/server';
 
+//spotify api to get top artists from spotify
 export async function GET(req) {
   try {
     const accessToken = req.headers.get('Authorization')?.split(' ')[1];

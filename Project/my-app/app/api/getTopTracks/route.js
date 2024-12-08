@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+//spotify api to get top tracks you have listened to
 export async function GET(req) {
   const session = await getServerSession(req, authOptions);
 

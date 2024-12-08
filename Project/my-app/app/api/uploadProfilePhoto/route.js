@@ -23,14 +23,14 @@ export async function POST(req) {
     const fileName = `${Date.now()}-${file.name}`; // Create a unique file name
 
     const params = {
-        Bucket: process.env.AWS_BUCKET_NAME, // The name of the S3 bucket
-        Key: fileName, // File name (key) in S3
+        Bucket: process.env.AWS_BUCKET_NAME, //  name of the S3 bucket
+        Key: fileName, // File name (key) in S3 bucke
         Body: Buffer.from(await file.arrayBuffer()), // Use Buffer.from to handle file data correctly
-        ContentType: file.type, // The file's MIME type
+        ContentType: file.type, // The file is a MIME type (who knows)
     };
 
     try {
-        // Generate a presigned URL with a 7-day expiration
+        // Generate a presigned URL with a 7-day expiration(will update on its own when we login)
         const command = new PutObjectCommand(params);
         const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 300000 }); // 604800 seconds = 7 days
         

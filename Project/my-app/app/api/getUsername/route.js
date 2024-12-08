@@ -3,13 +3,14 @@ import { connectMongoDB } from "../../../lib/mongodb";
 import { User } from "../../../models/User";
 import { NextResponse } from "next/server";
 
+//get username from id
 export async function POST(req) {
     try {
         await connectMongoDB(); // Make sure to connect to the DB
         const { userId } = await req.json(); // Expecting userId in the request body
 
         // Fetch the user from the database by userId
-        const user = await User.findById(userId).select('username'); // Only select the username field
+        const user = await User.findById(userId).select('username'); // Only select/return the username field
 
         if (user) {
             return new NextResponse(JSON.stringify({ username: user.username }), { status: 200 });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+//spotify api to get the user playlists, will return all the playlists the user has
 export async function GET(req) {
   try {
     const accessToken = req.headers.get('Authorization')?.split(' ')[1];

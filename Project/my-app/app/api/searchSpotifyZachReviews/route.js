@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+// same as regular spotify search api
 export async function POST(req) {
     try {
         const { query } = await req.json();

@@ -3,6 +3,7 @@ import { connectMongoDB } from '/lib/mongodb';
 import Song from '/models/user'; 
 import { getSession } from 'next-auth/react';
 
+// no longer used
 export default async function handler(req, res) {
   const session = await getSession({ req });
   if (!session) return res.status(401).json({ error: 'Unauthorized' });

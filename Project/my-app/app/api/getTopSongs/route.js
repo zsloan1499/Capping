@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+//spotify api to get the top songa youve listened to
 export async function GET() {
     const spotifyAccessToken = sessionStorage.getItem("spotifyAccessToken");
 

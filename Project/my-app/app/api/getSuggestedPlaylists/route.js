@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+//uses the get recently played reviewd of getting the genres of recently played songs and then search the reviews with songs that fit that genre
 export async function POST(req) {
   try {
     const { genres } = await req.json();

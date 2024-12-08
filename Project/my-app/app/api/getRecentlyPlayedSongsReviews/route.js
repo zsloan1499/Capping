@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+// get recently played song, used for the genre to help with suggested reviews
 export async function GET(req) {
   try {
     const accessToken = req.headers.get("Authorization")?.split(" ")[1]; // Get the access token

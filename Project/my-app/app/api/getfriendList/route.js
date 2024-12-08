@@ -4,10 +4,10 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
     try {
-        // Connect to MongoDB
+        // Connect to Mongo
         await connectMongoDB();
 
-        const { userId } = await req.json();  // Extract userId from the request body
+        const { userId } = await req.json();  // User if from request
 
         // Validate userId
         if (!userId) {
@@ -20,10 +20,10 @@ export async function POST(req) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        // Use IDs instead of usernames in the following list for more consistent MongoDB querying
+        // Use IDs in the following list
         const followingIds = currentUser.following || [];
 
-        // Find users who are not in the current user's following list and exclude the current user
+        // get  all users who are not in the current users following list and exclude the current user
         const users = await User.find({
             _id: { $nin: followingIds, $ne: userId } // Exclude users in following list and the current user
         }).select("username");

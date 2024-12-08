@@ -1,7 +1,8 @@
 import { connectMongoDB } from "/lib/mongodb";
-import { Review } from "/models/User"; // Assuming Review is the model for reviews
+import { Review } from "/models/User"; 
 import { NextResponse } from "next/server";
 
+//get the reviews for the top 50 rated songs when click on
 export async function POST(req) {
     try {
         await connectMongoDB();

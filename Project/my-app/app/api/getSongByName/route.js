@@ -1,7 +1,8 @@
 import { connectMongoDB } from '/lib/mongodb';
-import { Song } from '/models/User'; // Assuming Song is the model for songs
+import { Song } from '/models/User'; 
 import { NextResponse } from 'next/server';
 
+//gets a song by its name(not used anymore, i dont think)
 export async function POST(req) {
   try {
     await connectMongoDB();
