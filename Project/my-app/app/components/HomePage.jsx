@@ -292,14 +292,14 @@ export default function HomePage() {
           <h1 className="text-white text-6xl font-bold text-right">Melodi</h1>
   
           {/* Icons and Profile Photo */}
-          <div className="absolute top-4 right-4 flex items-center space-x-4">
+          <div className="absolute top-4 right-10 flex items-center space-x-3">
             {/* Profile Photo */}
             <Link href="/UserInfo">
               <img src={session?.user?.profilePhoto || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"} alt="User Profile Photo" className="w-6 h-6" />
             </Link>
   
             {/* Notification Bell Icon */}
-            <button className="text-white relative">
+            <button className="text-white ">
               <BellIcon className="w-6 h-6" />
               <span className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
                 {/* Optional notification content */}
@@ -307,7 +307,7 @@ export default function HomePage() {
             </button>
   
             {/* Settings Icon */}
-            <button className="text-white">
+            <button className="text-white ">
               <CogIcon className="w-6 h-6" />
             </button>
           </div>
