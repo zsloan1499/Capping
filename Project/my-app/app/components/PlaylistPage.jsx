@@ -34,7 +34,7 @@ export default function SpotifyPlaylists() {
           return;
         }
         //route call, send spotify access token
-        const response = await fetch('/api/getRecentlyPlayedSongsReviews', {
+        const response = await fetch('/api/getRecentlyPlayedSongsPlaylists', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
