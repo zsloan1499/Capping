@@ -61,5 +61,5 @@ Adrianna Bordonaro, Zachary Sloan, Harrison Weston, Cameron Catanzaro, & Giovann
 
      "react-quill": "^2.0.0"
 
-6.  Run the program with **npx next@14.2.14 dev**
+6.  Run the program with **npm run dev**
 7.  Open **localhost:3000** in a browser to use the app
