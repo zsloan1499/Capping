@@ -287,31 +287,38 @@ export default function HomePage() {
   
       {/* Main Content Area */}
       <div className={`flex-grow p-8 ${isNavOpen ? 'ml-32' : 'ml-12'}`}>
-        <title>Melodi</title>
-        <div className="flex items-center justify-center h-20">
-          <h1 className="text-white text-6xl font-bold text-right">Melodi</h1>
-  
-          {/* Icons and Profile Photo */}
-          <div className="absolute top-4 right-10 flex items-center space-x-3">
-            {/* Profile Photo */}
-            <Link href="/UserInfo">
-              <img src={session?.user?.profilePhoto || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"} alt="User Profile Photo" className="w-6 h-6" />
-            </Link>
-  
-            {/* Notification Bell Icon */}
-            <button className="text-white ">
-              <BellIcon className="w-6 h-6" />
-              <span className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                {/* Optional notification content */}
-              </span>
-            </button>
-  
-            {/* Settings Icon */}
-            <button className="text-white ">
-              <CogIcon className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
+  <title>Melodi</title>
+  <div className="flex items-center justify-center h-20">
+    <h1 className="text-white text-6xl font-bold text-right">Melodi</h1>
+  </div>
+
+  {/* Icons and Profile Photo */}
+  <div
+    className="fixed top-4 right-10 flex items-center space-x-4 z-50 bg-gray-800 p-2 rounded-lg"
+  >
+    {/* Profile Photo */}
+    <Link href="/UserInfo">
+      <img
+        src={session?.user?.profilePhoto || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"}
+        alt="User Profile Photo"
+        className="w-8 h-8 rounded-full"
+      />
+    </Link>
+
+    {/* Notification Bell Icon */}
+    <button className="text-white relative">
+      <BellIcon className="w-6 h-6" />
+      <span className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+        {/* Optional notification content */}
+      </span>
+    </button>
+
+    {/* Settings Icon */}
+    <button className="text-white">
+      <CogIcon className="w-6 h-6" />
+    </button>
+  </div>
+
   
   {/*can delete this part if not using search on homepage */}
   <div className="mt-8 relative">
