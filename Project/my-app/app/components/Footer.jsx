@@ -6,19 +6,19 @@ export default function Footer() {
       >
         <div className="container mx-auto text-center">
           <p className="mb-4">
-            <a href="/terms" className="text-blue-400 hover:underline">
+            <a href="/terms" className="text-blue-400 hover:underline"> {/* Link: Terms of Service */}
               Terms of Service
             </a>{' '}
             |{' '}
-            <a href="/privacy" className="text-blue-400 hover:underline">
+            <a href="/privacy" className="text-blue-400 hover:underline"> {/* Link: Privacy Policy */}
               Privacy Policy
             </a>{' '}
             |{' '}
-            <a href="/contact" className="text-blue-400 hover:underline">
+            <a href="/contact" className="text-blue-400 hover:underline"> {/* Link: Contact Us */}
               Contact Us
             </a>
           </p>
-          <p>&copy; 2024 Melodi. All rights reserved.</p>
+          <p>&copy; 2024 Melodi. All rights reserved.</p> {/* Copyright */}
         </div>
       </footer>
     );

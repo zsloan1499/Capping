@@ -5,16 +5,19 @@ import { useSession } from "next-auth/react";
 import Link from 'next/link';
 import { BellIcon, CogIcon } from '@heroicons/react/24/solid';
 
+// Main functional component for the FriendPage.
 export default function FriendPage() {
     const { data: session } = useSession();
     const [users, setUsers] = useState([]);
     const [following, setFollowing] = useState([]);
     const [isNavOpen, setIsNavOpen] = useState(false);
 
+     // useEffect to fetch the friend list when the session is available.
     useEffect(() => {
         if (session?.user) {
             const fetchUsers = async () => {
                 try {
+                    // API call to fetch the friend list.
                     const response = await fetch('/api/getfriendList', {
                         method: 'POST',
                         headers: {
@@ -38,8 +41,10 @@ export default function FriendPage() {
         }
     }, [session]);
 
+    // Function to handle adding a user to list.
     const addFollowing = async (username) => {
         try {
+            // API call to add a user to list.
             const response = await fetch("/api/addFollower", {
                 method: 'POST',
                 headers: {
