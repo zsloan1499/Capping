@@ -73,7 +73,7 @@ export default function GlobalRanking() {
         >
           {isNavOpen ? 'Close' : 'Open'}
         </button>
-        <Link href="/" className="text-white p-2 hover:bg-gray-700 rounded">
+        <Link href="/dashboard" className="text-white p-2 hover:bg-gray-700 rounded">
           Home
         </Link>
         <Link href="/Playlists" className="text-white p-2 hover:bg-gray-700 rounded">Playlists</Link>
