@@ -267,12 +267,18 @@ export default function HomePage() {
     <div className="bg-customBlue w-screen h-screen flex overflow-x-hidden">
       {/* Left Side Navigation Bar */}
       <nav className={`bg-black ${isNavOpen ? 'w-42' : 'w-42'} sticky top-0 h-auto p-4 flex flex-col space-y-4 transition-width duration-300`}>
-        <button
-            className="bg-blue-500 text-white p-2 rounded mb-4 w-16"
-            onClick={toggleNav}
-        >
-            {isNavOpen ? 'Close' : 'Open'}
-        </button>
+      <button
+    className=" text-white p-2 rounded mb-4 w-12 h-12 flex items-center justify-center"
+    onClick={toggleNav}
+>
+    {/* Three horizontal lines (hamburger menu) */}
+    <div className="flex flex-col justify-between w-6 h-4">
+        <span className="block bg-white h-0.5 w-full"></span>
+        <span className="block bg-white h-0.5 w-full"></span>
+        <span className="block bg-white h-0.5 w-full"></span>
+    </div>
+</button>
+
 
         {isNavOpen && (
            <>
